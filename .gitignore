@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+venv/
+dist/
+build/
+tmp/
+out/
+*.log
+*.pdf
+*.png
+*.docx
+!skills/legal-document-format/examples/*.md
+
