@@ -28,6 +28,15 @@ Classify the request before loading detailed references:
 | L3 arbitration-award | Format an arbitration award or award-like formal instrument | `references/routing.md`, `references/content-lock.md`, `references/exact-template.md`, `references/format-checklist.md`, `references/visual-validation.md` |
 | L4 visual-validation | Render DOCX, compare PDF/PNG output, or inspect pagination/layout | `references/visual-validation.md` |
 
+## Tooling
+
+Use the bundled scripts when local files are available:
+
+- `scripts/audit_text.py`: legal text punctuation and spacing audit.
+- `scripts/audit_docx_structure.py`: DOCX package and OpenXML structure audit.
+- `scripts/render_docx.sh`: DOCX to PDF to PNG render chain.
+- `scripts/compare_rendered_pages.py`: lightweight metadata comparison for rendered PNG page directories.
+
 ## Output Requirements
 
 For every substantive formatting task, report:
@@ -41,4 +50,3 @@ For every substantive formatting task, report:
 - unresolved format or verification items.
 
 For lawyer-facing deliverables, include a final format pass covering line spacing, fonts, paragraph indentation, font size, color, and full-width or half-width punctuation, especially quotation marks and colons.
-

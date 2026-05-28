@@ -1,0 +1,17 @@
+[project]
+name = "legal-document-format-skill"
+version = "0.2.0"
+description = "Agent skill for legal DOCX formatting, content locking, and render validation."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+

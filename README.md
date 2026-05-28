@@ -36,10 +36,16 @@ legal-document-format-skill/
         │   ├── format-checklist.md
         │   └── visual-validation.md
         ├── scripts/
+        │   ├── README.md
+        │   ├── audit_docx_structure.py
+        │   ├── audit_text.py
+        │   ├── compare_rendered_pages.py
         │   └── render_docx.sh
         └── examples/
             ├── README.md
             └── synthetic-award-fragment.md
+├── tests/
+└── pyproject.toml
 ```
 
 ## Routing Model
@@ -81,6 +87,40 @@ The command writes:
 - `output/rendered/png/<name>-page-1.png`
 - one PNG per rendered PDF page
 
+## Audit Text And DOCX Structure
+
+Run a text punctuation and spacing audit:
+
+```bash
+./skills/legal-document-format/scripts/audit_text.py "申请人: 张三" --json
+```
+
+For sensitive material, use `--no-excerpt` before writing reports to shared logs. Use `--file` when the input must be read from a file. Use `--fail-on-issue` when the audit is acting as a strict gate.
+
+Run a lightweight DOCX OpenXML structure audit:
+
+```bash
+./skills/legal-document-format/scripts/audit_docx_structure.py input.docx --json
+```
+
+Compare two directories of rendered PNG pages:
+
+```bash
+./skills/legal-document-format/scripts/compare_rendered_pages.py baseline/png candidate/png --json
+```
+
+## Local Verification
+
+Run the available checks before committing:
+
+```bash
+bash -n skills/legal-document-format/scripts/render_docx.sh
+python -m py_compile skills/legal-document-format/scripts/*.py tests/*.py
+python -m pytest
+```
+
+The Python audit scripts use standard-library runtime code. Test execution uses `pytest`.
+
 ## Format Gate
 
 Before delivering a formatted legal document, confirm:
@@ -101,4 +141,3 @@ Do not commit:
 - exported commercial-platform records containing private matter context.
 
 Use synthetic examples unless a human explicitly approves sanitized sample material.
-

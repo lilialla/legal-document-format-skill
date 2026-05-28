@@ -10,6 +10,8 @@ DOCX -> LibreOffice headless -> PDF -> Poppler pdftoppm -> PNG pages
 
 Use `scripts/render_docx.sh` for the default local path.
 
+Use `scripts/compare_rendered_pages.py` when both baseline PNG pages and candidate PNG pages are available. The built-in comparison is a lightweight gate for page count, file names, file size, PNG validity, and dimensions. It is not a pixel diff.
+
 ## Required Tools
 
 - `soffice` from LibreOffice.
@@ -57,4 +59,3 @@ Use:
 - `baseline matched`: visual comparison passed under the chosen tolerance;
 - `baseline differed`: visual comparison found differences;
 - `no baseline`: render succeeded but no visual diff was possible.
-
