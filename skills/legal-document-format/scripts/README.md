@@ -36,4 +36,31 @@ Compares two directories of rendered PNG pages. This is a metadata gate, not a p
 ./skills/legal-document-format/scripts/compare_rendered_pages.py baseline/png candidate/png --json
 ```
 
+## `format_gate.py`
+
+Aggregates text, DOCX structure, and rendered-page checks into one local report.
+
+```bash
+./skills/legal-document-format/scripts/format_gate.py \
+  --text "申请人: 张三" \
+  --docx input.docx \
+  --baseline-png baseline/png \
+  --candidate-png candidate/png \
+  --json --no-excerpt
+```
+
+Use `--text-file path/to/input.txt` when the text input must be read from a file.
+
+The aggregate gate returns exit code `1` only when at least one check reports an error. Warning-only reports exit `0`.
+
+## `make_synthetic_docx.py`
+
+Generates a minimal synthetic DOCX fixture for local smoke tests.
+
+```bash
+./skills/legal-document-format/scripts/make_synthetic_docx.py output/synthetic.docx
+```
+
+The generator refuses to overwrite existing files unless `--force` is provided.
+
 All scripts support `--help`; Python audit scripts support human-readable output and `--json`. Scripts return non-zero for structural or visual errors. Warning-only text audits return zero unless `--fail-on-issue` is used. Rendered-page comparison reports `status: warning` for warning-only differences while keeping exit code `0`.

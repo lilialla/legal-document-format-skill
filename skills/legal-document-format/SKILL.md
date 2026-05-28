@@ -26,7 +26,7 @@ Classify the request before loading detailed references:
 | L1 ordinary-docx-format | Make a normal Word document from text or Markdown | `references/routing.md`, `references/format-checklist.md` |
 | L2 exact-template | Preserve a supplied DOCX template or base document | `references/exact-template.md`, `references/content-lock.md`, `references/format-checklist.md` |
 | L3 arbitration-award | Format an arbitration award or award-like formal instrument | `references/routing.md`, `references/content-lock.md`, `references/exact-template.md`, `references/format-checklist.md`, `references/visual-validation.md` |
-| L4 visual-validation | Render DOCX, compare PDF/PNG output, or inspect pagination/layout | `references/visual-validation.md` |
+| L4 visual-validation | Render DOCX, compare PDF/PNG output, or inspect pagination/layout | `references/visual-validation.md`, `references/failure-modes.md` |
 
 ## Tooling
 
@@ -36,6 +36,10 @@ Use the bundled scripts when local files are available:
 - `scripts/audit_docx_structure.py`: DOCX package and OpenXML structure audit.
 - `scripts/render_docx.sh`: DOCX to PDF to PNG render chain.
 - `scripts/compare_rendered_pages.py`: lightweight metadata comparison for rendered PNG page directories.
+- `scripts/format_gate.py`: aggregate text, DOCX, and rendered-page checks into one report.
+- `scripts/make_synthetic_docx.py`: generate synthetic DOCX fixtures for local smoke tests.
+
+When multiple checks are run together, classify findings with `references/failure-modes.md`: errors block delivery, warnings require review, and clean formatting checks do not prove legal correctness.
 
 ## Output Requirements
 

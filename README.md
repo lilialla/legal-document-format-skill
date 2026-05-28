@@ -33,6 +33,7 @@ legal-document-format-skill/
         │   ├── routing.md
         │   ├── content-lock.md
         │   ├── exact-template.md
+        │   ├── failure-modes.md
         │   ├── format-checklist.md
         │   └── visual-validation.md
         ├── scripts/
@@ -40,6 +41,8 @@ legal-document-format-skill/
         │   ├── audit_docx_structure.py
         │   ├── audit_text.py
         │   ├── compare_rendered_pages.py
+        │   ├── format_gate.py
+        │   ├── make_synthetic_docx.py
         │   └── render_docx.sh
         └── examples/
             ├── README.md
@@ -107,6 +110,25 @@ Compare two directories of rendered PNG pages:
 
 ```bash
 ./skills/legal-document-format/scripts/compare_rendered_pages.py baseline/png candidate/png --json
+```
+
+Run an aggregate gate over text, DOCX structure, and rendered pages:
+
+```bash
+./skills/legal-document-format/scripts/format_gate.py \
+  --text "申请人: 张三" \
+  --docx input.docx \
+  --baseline-png baseline/png \
+  --candidate-png candidate/png \
+  --json --no-excerpt
+```
+
+Use `--text-file path/to/input.txt` when the text input must be read from a file.
+
+Generate a synthetic DOCX fixture for local smoke tests:
+
+```bash
+./skills/legal-document-format/scripts/make_synthetic_docx.py output/synthetic.docx
 ```
 
 ## Local Verification
