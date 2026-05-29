@@ -2,11 +2,25 @@
 
 本项目遵循语义化版本思路记录公开发布变化。
 
+## 2.2.0 - 2026-05-29
+
+### 调整
+
+- 将项目主定位从“字段替换”调整为“法律文书模板执行 Skill”。
+- README、SKILL、路由和参考文档改为以 Claude Code / Codex 的自然语言模板执行为主路径。
+- 新增 `references/template-execution.md`，说明模板、自然语言任务、内容来源和交付门禁的协作方式。
+- 将 `apply_docx_template.py` 明确降级为确定性字段模式，而不是普通用户使用本 Skill 的前置条件。
+- 发布说明更新为 `v2.2.0 模板执行版`。
+
+### 验证
+
+- 文档和 Skill 路由调整不改变现有脚本行为；发布 smoke 仍覆盖确定性字段模式和格式门禁。
+
 ## 2.1.0 - 2026-05-29
 
 ### 修复
 
-- 支持替换同一段落内被 Word 拆分到多个 run/text 节点的 `{{KEY}}` 占位符。
+- 支持替换同一段落内被 Word 拆分到多个 run/text 节点的 `{{KEY}}` 字段。
 - 模板应用失败时不再留下目标 DOCX，避免后续流水线误用失败产物。
 - `compare_rendered_pages.py` 增加 `--fail-on-warning`，可将 PNG 大小或内容差异升级为阻断门禁。
 - `compare_docx_template_parity.py` 不再忽略 `w:instrText`，页码字段等 field code 变化会被模板一致性门禁发现。
@@ -35,7 +49,7 @@
 
 ### 新增
 
-- V2 精确模板生成：`apply_docx_template.py` 从用户提供的 DOCX 模板复制包结构，只替换 `{{KEY}}` 文本占位符。
+- V2 精确模板生成：`apply_docx_template.py` 从用户提供的 DOCX 模板复制包结构，只替换 `{{KEY}}` 文本字段。
 - 模板一致性门禁：`compare_docx_template_parity.py` 对比模板与输出，要求除文本节点内容外的 OpenXML 结构、样式、页眉页脚、分节、页码字段、编号、关系和非文本部件保持一致。
 - synthetic DOCX 生成器增加页眉、页脚和 PAGE 字段，用于覆盖页眉页脚与页码场景。
 - 发布 smoke gate 增加模板应用与模板一致性检查，当前共 10 步。
@@ -43,12 +57,12 @@
 ### 验证
 
 - 该版本发布时验证：`55 passed`。
-- 发布 smoke gate 已覆盖 DOCX 模板生成、占位符替换、OpenXML 模板一致性、DOCX -> PDF -> PNG 渲染、并行 LibreOffice 渲染和格式门禁。
+- 发布 smoke gate 已覆盖 DOCX 模板生成、字段替换、OpenXML 模板一致性、DOCX -> PDF -> PNG 渲染、并行 LibreOffice 渲染和格式门禁。
 
 ### 边界
 
-- V2 要求模板内存在明确 `{{KEY}}` 占位符；不对无占位符文档进行语义猜测替换。
-- 为了保证版式一致性，默认只替换单个 Word 文本节点内的占位符；跨多个 Word run 的占位符会被未解析占位符门禁阻断。
+- 2.0.0 当时要求模板内存在明确 `{{KEY}}` 字段；不对无字段文档进行语义猜测替换。
+- 为了保证版式一致性，2.0.0 当时默认只替换单个 Word 文本节点内的字段；跨多个 Word run 的字段会被未解析字段门禁阻断。
 
 ## 1.0.0 - 2026-05-29
 

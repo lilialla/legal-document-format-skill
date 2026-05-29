@@ -2,23 +2,25 @@
 
 ## 发布定位
 
-`2.1.0` 是“文格：法律文书格式门禁 Skill”的 V2 审计修复版。它面向本地 Agent Skill 分发、公开展示、法律文书格式 QA 和基于用户 DOCX 模板的精确版式生成，不提供法律意见，也不替代律师审阅。
+`2.2.0` 是“文格：法律文书模板执行 Skill”的模板执行版。它面向 Claude Code、Codex 和兼容 Agent 分发，核心定位是把用户提供的 DOCX 模板作为格式事实来源，让 AI 按自然语言任务生成、批处理并校验法律文书。
+
+文格不提供法律意见，也不替代律师审阅。
 
 ## V2 必须满足
 
-- README 首页中文化，包含 Logo、Badges、Topics、快速开始、能力矩阵、发布版强制校验、项目经验、外部参考、隐私安全和路线图。
-- `pyproject.toml` 版本为 `2.1.0`。
-- `apply_docx_template.py` 能从 DOCX 模板复制包结构并替换 `{{KEY}}` 文本占位符。
-- `compare_docx_template_parity.py` 能证明除文本节点内容外，模板和输出的 OpenXML 布局结构一致。
-- `apply_docx_template.py` 能替换同一段落内被 Word 拆分到多个 run/text 节点的占位符，失败时不留下目标 DOCX。
+- README 首页中文化，说明主路径是“模板 + 自然语言任务 + 材料 + 交付门禁”，而不是要求普通用户维护字段。
+- `pyproject.toml` 版本为 `2.2.0`。
+- `SKILL.md` 将 L2 主路由定义为模板执行，适用于用户提供 DOCX 模板、母版或样本文书的场景。
+- `references/template-execution.md` 说明 Claude Code / Codex 应如何读取模板、理解自然语言任务、生成候选文书并报告人工复核项。
+- `apply_docx_template.py` 保留为确定性字段模式，能从 DOCX 模板复制包结构并替换 `{{KEY}}` 文本字段。
+- `compare_docx_template_parity.py` 能在确定性字段模式下证明除文本节点内容外，模板和输出的 OpenXML 布局结构一致。
 - `audit_text.py` 覆盖中文法律语境中的常见全半角标点问题。
 - `audit_docx_structure.py` 覆盖 DOCX 内全半角标点、标题字体字号、标点符号字体统一性、页码字段和页眉页脚引用风险。
 - 完整发布档强制安装 Python 3.9+、LibreOffice 和 Poppler。
 - `format_gate.py --require-visual` 能阻断缺少视觉渲染页的发布门禁。
 - `compare_rendered_pages.py --fail-on-warning` 能把 PNG 大小或内容差异作为阻断门禁。
-- `release_smoke.py` 能跑通 synthetic 模板 DOCX 生成、模板应用、模板一致性、渲染和聚合门禁。
+- `release_smoke.py` 能跑通 synthetic 模板 DOCX 生成、确定性字段应用、模板一致性、渲染和聚合门禁。
 - LibreOffice 渲染使用独立 profile，并通过 3 路并行渲染 smoke。
-- PNG 渲染页比较会检查页面文件哈希差异。
 - 测试通过，且不依赖真实案件、客户材料或私有模板。
 
 ## 发布前命令
@@ -39,8 +41,8 @@ python3 -m pip install -e ".[test]"
 ## 不纳入 V2 默认范围
 
 - 第三方像素级 PDF diff 默认集成；
-- 任意无占位符 DOCX 的自动语义猜测替换；
-- 跨段落、跨表格单元格或跨复杂块的占位符自动合并；
+- 对任意无标注复杂 DOCX 模板承诺 100% 自动精确填充；
+- 跨段落、跨表格单元格或跨复杂块的字段自动合并；
 - 私有模板；
 - 真实案件 fixture；
 - 托管服务；

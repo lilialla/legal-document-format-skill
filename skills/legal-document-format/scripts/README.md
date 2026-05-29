@@ -1,6 +1,6 @@
 # 脚本说明
 
-这些脚本是“文格”法律文书格式门禁的本地质量检查工具。脚本只处理本地文件，不应包含密钥、私有模板或真实案件材料。
+这些脚本是“文格”法律文书模板执行 Skill 的本地质量检查工具。脚本只处理本地文件，不应包含密钥、私有模板或真实案件材料。
 
 ## `render_docx.sh`
 
@@ -22,7 +22,7 @@
 
 ## `audit_text.py`
 
-审计文本或 UTF-8 文本文件中的法律文书标点、全半角混用、空格和占位符问题。当前会提示中文语境中的半角冒号、逗号、分号、问号、叹号、括号、英文直引号等常见问题。
+审计文本或 UTF-8 文本文件中的法律文书标点、全半角混用、空格和疑似空字段问题。当前会提示中文语境中的半角冒号、逗号、分号、问号、叹号、括号、英文直引号等常见问题。
 
 ```bash
 ./skills/legal-document-format/scripts/audit_text.py "申请人: 张三" --json
@@ -40,7 +40,7 @@
 
 ## `apply_docx_template.py`
 
-从用户提供的 DOCX 模板复制完整包结构，只替换模板中已有的 `{{KEY}}` 文本占位符。支持同一段落内跨 run/text 节点的占位符；页眉、页脚、分节、样式、编号、页码字段和媒体均继承自模板。
+确定性字段模式：从用户提供的 DOCX 模板复制完整包结构，只替换模板中已有的 `{{KEY}}` 文本字段。支持同一段落内跨 run/text 节点的字段；页眉、页脚、分节、样式、编号、页码字段和媒体均继承自模板。
 
 ```bash
 ./skills/legal-document-format/scripts/apply_docx_template.py \
@@ -94,7 +94,7 @@
 
 ## `release_smoke.py`
 
-运行 V2 发布 smoke gate，覆盖发布依赖、shell 语法、Python 编译、synthetic 模板 DOCX、模板应用、模板一致性、DOCX 渲染、3 路并行 LibreOffice 渲染、强制视觉格式门禁和 pytest。
+运行发布 smoke gate，覆盖发布依赖、shell 语法、Python 编译、synthetic 模板 DOCX、确定性字段应用、模板一致性、DOCX 渲染、3 路并行 LibreOffice 渲染、强制视觉格式门禁和 pytest。
 
 ```bash
 ./skills/legal-document-format/scripts/release_smoke.py

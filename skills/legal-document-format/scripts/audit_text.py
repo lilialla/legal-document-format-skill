@@ -171,7 +171,7 @@ def _find_empty_brackets(line: str, line_number: int) -> Iterable[Issue]:
         for match in pattern.finditer(line):
             yield _make_issue(
                 "EMPTY_BRACKETS",
-                f"发现{label}，建议核对是否遗漏内容或应删除占位符。",
+                f"发现{label}，建议核对是否遗漏内容或应删除残留字段。",
                 line_number,
                 match.start() + 1,
                 line,
