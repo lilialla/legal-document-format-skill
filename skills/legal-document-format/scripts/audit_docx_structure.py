@@ -15,6 +15,9 @@ from xml.etree import ElementTree
 WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
 NS = {"w": WORD_NS, "rel": REL_NS}
+TITLE_STYLE_IDS = {"Title", "Heading1", "Heading 1", "标题", "标题1", "标题 1"}
+CJK_PUNCTUATION = set("，。、；：？！“”‘’（）《》〈〉【】、")
+HALFWIDTH_PUNCTUATION = set(",;:?!()\"'")
 
 CONTENT_TYPES = "[Content_Types].xml"
 PACKAGE_RELS = "_rels/.rels"
@@ -29,6 +32,22 @@ def make_issue(code: str, severity: str, message: str, path: str | None = None) 
     if path is not None:
         issue["path"] = path
     return issue
+
+
+def local_name(tag: str) -> str:
+    return tag.rsplit("}", 1)[-1]
+
+
+def child(element: ElementTree.Element | None, path: str) -> ElementTree.Element | None:
+    if element is None:
+        return None
+    return element.find(path, NS)
+
+
+def attr_value(element: ElementTree.Element | None, name: str) -> str | None:
+    if element is None:
+        return None
+    return element.attrib.get(f"{{{WORD_NS}}}{name}")
 
 
 def read_xml(zip_file: zipfile.ZipFile, part: str, issues: list[dict[str, str]]) -> ElementTree.Element | None:
@@ -67,6 +86,231 @@ def count_content_runs(document_root: ElementTree.Element) -> int:
     return text_count + drawing_count
 
 
+def run_text(run: ElementTree.Element) -> str:
+    return "".join(text.text or "" for text in run.findall(".//w:t", NS))
+
+
+def run_fonts(run: ElementTree.Element, inherited: dict[str, str | None] | None = None) -> dict[str, str | None]:
+    fonts = dict(inherited or {})
+    r_fonts = child(child(run, "w:rPr"), "w:rFonts")
+    if r_fonts is not None:
+        for key in ("ascii", "hAnsi", "eastAsia", "cs"):
+            value = attr_value(r_fonts, key)
+            if value:
+                fonts[key] = value
+    return fonts
+
+
+def run_size(run: ElementTree.Element, inherited: str | None = None) -> str | None:
+    size = child(child(run, "w:rPr"), "w:sz")
+    return attr_value(size, "val") or inherited
+
+
+def style_run_defaults(styles_root: ElementTree.Element | None) -> dict[str, dict[str, Any]]:
+    defaults: dict[str, dict[str, Any]] = {}
+    if styles_root is None:
+        return defaults
+    for style in styles_root.findall(".//w:style", NS):
+        style_id = attr_value(style, "styleId")
+        if not style_id:
+            continue
+        r_pr = child(style, "w:rPr")
+        r_fonts = child(r_pr, "w:rFonts")
+        fonts: dict[str, str | None] = {}
+        if r_fonts is not None:
+            for key in ("ascii", "hAnsi", "eastAsia", "cs"):
+                fonts[key] = attr_value(r_fonts, key)
+        defaults[style_id] = {
+            "fonts": fonts,
+            "size": attr_value(child(r_pr, "w:sz"), "val"),
+        }
+    return defaults
+
+
+def paragraph_style_id(paragraph: ElementTree.Element) -> str | None:
+    return attr_value(child(child(paragraph, "w:pPr"), "w:pStyle"), "val")
+
+
+def paragraph_text(paragraph: ElementTree.Element) -> str:
+    return "".join(text.text or "" for text in paragraph.findall(".//w:t", NS)).strip()
+
+
+def is_title_paragraph(paragraph: ElementTree.Element) -> bool:
+    style_id = paragraph_style_id(paragraph)
+    return style_id in TITLE_STYLE_IDS
+
+
+def format_signature(fonts: dict[str, str | None], size: str | None) -> tuple[str | None, str | None, str | None, str | None, str | None]:
+    return (
+        fonts.get("eastAsia"),
+        fonts.get("ascii"),
+        fonts.get("hAnsi"),
+        fonts.get("cs"),
+        size,
+    )
+
+
+def audit_title_format(
+    document_root: ElementTree.Element,
+    style_defaults: dict[str, dict[str, Any]],
+    issues: list[dict[str, str]],
+) -> dict[str, Any]:
+    paragraphs = document_root.findall(".//w:p", NS)
+    title_count = 0
+    fonts_seen: set[tuple[str | None, str | None, str | None, str | None]] = set()
+    sizes_seen: set[str | None] = set()
+    missing_font_count = 0
+    missing_size_count = 0
+
+    for paragraph in paragraphs:
+        text = paragraph_text(paragraph)
+        if not text:
+            continue
+        if not is_title_paragraph(paragraph):
+            continue
+
+        title_count += 1
+        style_defaults_for_paragraph = style_defaults.get(paragraph_style_id(paragraph) or "", {})
+        inherited_fonts = style_defaults_for_paragraph.get("fonts", {})
+        inherited_size = style_defaults_for_paragraph.get("size")
+        paragraph_signatures: set[tuple[str | None, str | None, str | None, str | None, str | None]] = set()
+        for run in paragraph.findall("w:r", NS):
+            if not run_text(run).strip():
+                continue
+            signature = format_signature(run_fonts(run, inherited_fonts), run_size(run, inherited_size))
+            paragraph_signatures.add(signature)
+            fonts_seen.add(signature[:4])
+            sizes_seen.add(signature[4])
+            if not signature[0]:
+                missing_font_count += 1
+            if not signature[4]:
+                missing_size_count += 1
+
+        if missing_font_count:
+            issues.append(
+                make_issue(
+                    "title_font_missing",
+                    "warning",
+                    "标题文字存在无法解析的中文字体设置，建议明确标题字体。",
+                    DOCUMENT_XML,
+                )
+            )
+        if missing_size_count:
+            issues.append(
+                make_issue(
+                    "title_size_missing",
+                    "warning",
+                    "标题文字存在无法解析的字号设置，建议明确标题字号。",
+                    DOCUMENT_XML,
+                )
+            )
+        if len({signature[:4] for signature in paragraph_signatures}) > 1:
+            issues.append(
+                make_issue(
+                    "title_font_mixed",
+                    "warning",
+                    "同一标题段落中发现多种字体设置，建议统一标题字体。",
+                    DOCUMENT_XML,
+                )
+            )
+        if len({signature[4] for signature in paragraph_signatures}) > 1:
+            issues.append(
+                make_issue(
+                    "title_size_mixed",
+                    "warning",
+                    "同一标题段落中发现多种字号设置，建议统一标题字号。",
+                    DOCUMENT_XML,
+                )
+            )
+
+    return {
+        "title_paragraph_count": title_count,
+        "title_font_signature_count": len(fonts_seen),
+        "title_size_count": len(sizes_seen),
+        "title_missing_font_run_count": missing_font_count,
+        "title_missing_size_run_count": missing_size_count,
+    }
+
+
+def all_word_roots(docx: zipfile.ZipFile, parts: set[str], issues: list[dict[str, str]]) -> list[tuple[str, ElementTree.Element]]:
+    roots: list[tuple[str, ElementTree.Element]] = []
+    for part in sorted(parts):
+        if not part.startswith("word/") or not part.endswith(".xml"):
+            continue
+        try:
+            with docx.open(part) as xml_file:
+                roots.append((part, ElementTree.parse(xml_file).getroot()))
+        except ElementTree.ParseError:
+            continue
+        except KeyError:
+            issues.append(make_issue("missing_part", "error", f"Missing required OpenXML part: {part}", part))
+    return roots
+
+
+def audit_punctuation_fonts(
+    word_roots: list[tuple[str, ElementTree.Element]],
+    style_defaults: dict[str, dict[str, Any]],
+    issues: list[dict[str, str]],
+) -> dict[str, Any]:
+    punctuation_run_count = 0
+    cjk_punctuation_run_count = 0
+    halfwidth_punctuation_run_count = 0
+    missing_east_asia_count = 0
+    signatures: set[tuple[str | None, str | None, str | None, str | None, str | None]] = set()
+    default_fonts = style_defaults.get("Normal", {}).get("fonts", {})
+    default_size = style_defaults.get("Normal", {}).get("size")
+
+    for part, root in word_roots:
+        if local_name(root.tag) not in {"document", "hdr", "ftr"}:
+            continue
+        for paragraph in root.findall(".//w:p", NS):
+            style_defaults_for_paragraph = style_defaults.get(paragraph_style_id(paragraph) or "", {})
+            inherited_fonts = style_defaults_for_paragraph.get("fonts", default_fonts)
+            inherited_size = style_defaults_for_paragraph.get("size") or default_size
+            for run in paragraph.findall("w:r", NS):
+                text = run_text(run)
+                if not text or not any(mark in text for mark in CJK_PUNCTUATION | HALFWIDTH_PUNCTUATION):
+                    continue
+                punctuation_run_count += 1
+                has_cjk_punctuation = any(mark in text for mark in CJK_PUNCTUATION)
+                has_halfwidth_punctuation = any(mark in text for mark in HALFWIDTH_PUNCTUATION)
+                cjk_punctuation_run_count += int(has_cjk_punctuation)
+                halfwidth_punctuation_run_count += int(has_halfwidth_punctuation)
+                direct_r_fonts = child(child(run, "w:rPr"), "w:rFonts")
+                fonts = run_fonts(run, inherited_fonts)
+                size = run_size(run, inherited_size)
+                signatures.add(format_signature(fonts, size))
+                direct_has_latin_font = bool(attr_value(direct_r_fonts, "ascii") or attr_value(direct_r_fonts, "hAnsi"))
+                direct_missing_east_asia = direct_r_fonts is not None and direct_has_latin_font and not attr_value(direct_r_fonts, "eastAsia")
+                if has_cjk_punctuation and (not fonts.get("eastAsia") or direct_missing_east_asia):
+                    missing_east_asia_count += 1
+                    issues.append(
+                        make_issue(
+                            "punctuation_font_missing_east_asia",
+                            "warning",
+                            "中文标点所在 run 缺少 eastAsia 字体设置，可能回退到英文字体。",
+                            part,
+                        )
+                    )
+
+    if len(signatures) > 1:
+        issues.append(
+            make_issue(
+                "punctuation_font_mixed",
+                "warning",
+                "文档标点所在 run 存在多种字体/字号组合，建议统一标点符号字体。",
+                DOCUMENT_XML,
+            )
+        )
+    return {
+        "punctuation_run_count": punctuation_run_count,
+        "cjk_punctuation_run_count": cjk_punctuation_run_count,
+        "halfwidth_punctuation_run_count": halfwidth_punctuation_run_count,
+        "punctuation_font_signature_count": len(signatures),
+        "punctuation_missing_east_asia_count": missing_east_asia_count,
+    }
+
+
 def has_office_document_relationship(package_root: ElementTree.Element | None) -> bool:
     if package_root is None:
         return False
@@ -97,6 +341,16 @@ def audit_docx(path: Path) -> dict[str, Any]:
         "footer_part_count": 0,
         "has_styles": False,
         "has_numbering": False,
+        "title_paragraph_count": 0,
+        "title_font_signature_count": 0,
+        "title_size_count": 0,
+        "title_missing_font_run_count": 0,
+        "title_missing_size_run_count": 0,
+        "punctuation_run_count": 0,
+        "cjk_punctuation_run_count": 0,
+        "halfwidth_punctuation_run_count": 0,
+        "punctuation_font_signature_count": 0,
+        "punctuation_missing_east_asia_count": 0,
     }
 
     if not path.exists():
@@ -132,6 +386,8 @@ def audit_docx(path: Path) -> dict[str, Any]:
             content_types_root = read_xml(docx, CONTENT_TYPES, issues)
             package_rels_root = read_xml(docx, PACKAGE_RELS, issues)
             document_root = read_xml(docx, DOCUMENT_XML, issues)
+            styles_root = read_xml(docx, STYLES_XML, issues) if STYLES_XML in parts else None
+            style_defaults = style_run_defaults(styles_root)
             if DOCUMENT_RELS in parts:
                 read_xml(docx, DOCUMENT_RELS, issues)
 
@@ -170,6 +426,8 @@ def audit_docx(path: Path) -> dict[str, Any]:
                 summary["section_count"] = len(document_root.findall(".//w:sectPr", NS))
                 summary["paragraph_count"] = len(document_root.findall(".//w:p", NS))
                 summary["table_count"] = len(document_root.findall(".//w:tbl", NS))
+                summary.update(audit_title_format(document_root, style_defaults, issues))
+                summary.update(audit_punctuation_fonts(all_word_roots(docx, parts, issues), style_defaults, issues))
 
                 if summary["paragraph_count"] == 0 and summary["table_count"] == 0:
                     issues.append(
@@ -225,6 +483,14 @@ def format_report(result: dict[str, Any]) -> str:
         f"- footers: {format_bool(summary['has_footer_parts'])} ({summary['footer_part_count']})",
         f"- styles: {format_bool(summary['has_styles'])}",
         f"- numbering: {format_bool(summary['has_numbering'])}",
+        "",
+        "Format details:",
+        f"- title paragraphs: {summary['title_paragraph_count']}",
+        f"- title font signatures: {summary['title_font_signature_count']}",
+        f"- title sizes: {summary['title_size_count']}",
+        f"- punctuation runs: {summary['punctuation_run_count']}",
+        f"- punctuation font signatures: {summary['punctuation_font_signature_count']}",
+        f"- punctuation missing eastAsia font: {summary['punctuation_missing_east_asia_count']}",
         "",
         f"Issues: {result['issue_count']}",
     ]

@@ -52,6 +52,46 @@ EMPTY_DOCUMENT_XML = """<?xml version="1.0" encoding="UTF-8"?>
 </w:document>
 """
 
+FORMATTED_DOCUMENT_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p><w:pPr><w:pStyle w:val="Title"/></w:pPr><w:r><w:t>裁决书</w:t></w:r></w:p>
+    <w:p><w:r><w:t>申请人：甲方贸易有限公司。</w:t></w:r></w:p>
+    <w:sectPr/>
+  </w:body>
+</w:document>
+"""
+
+MIXED_FORMAT_DOCUMENT_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p><w:pPr><w:pStyle w:val="Title"/></w:pPr>
+      <w:r><w:rPr><w:rFonts w:eastAsia="SimSun" w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="32"/></w:rPr><w:t>裁</w:t></w:r>
+      <w:r><w:rPr><w:rFonts w:eastAsia="KaiTi" w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="28"/></w:rPr><w:t>决书</w:t></w:r>
+    </w:p>
+    <w:p>
+      <w:r><w:rPr><w:rFonts w:eastAsia="SimSun" w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>申请人：</w:t></w:r>
+      <w:r><w:rPr><w:rFonts w:eastAsia="KaiTi" w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="24"/></w:rPr><w:t>被申请人。</w:t></w:r>
+      <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr><w:t>第三人；</w:t></w:r>
+    </w:p>
+    <w:sectPr/>
+  </w:body>
+</w:document>
+"""
+
+STYLES_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+    <w:name w:val="Normal"/>
+    <w:rPr><w:rFonts w:eastAsia="SimSun" w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Title">
+    <w:name w:val="Title"/>
+    <w:rPr><w:rFonts w:eastAsia="SimSun" w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="32"/></w:rPr>
+  </w:style>
+</w:styles>
+"""
+
 
 def write_docx(path, parts):
     with zipfile.ZipFile(path, "w") as docx:
@@ -143,6 +183,56 @@ def test_reports_malformed_document_relationships(tmp_path):
         and issue["path"] == "word/_rels/document.xml.rels"
         for issue in result["issues"]
     )
+
+
+def test_reports_title_and_punctuation_format_summary(tmp_path):
+    docx_path = tmp_path / "formatted.docx"
+    write_docx(
+        docx_path,
+        {
+            "[Content_Types].xml": CONTENT_TYPES_XML,
+            "_rels/.rels": PACKAGE_RELS_XML,
+            "word/document.xml": FORMATTED_DOCUMENT_XML,
+            "word/_rels/document.xml.rels": EMPTY_DOCUMENT_RELS_XML,
+            "word/styles.xml": STYLES_XML,
+        },
+    )
+
+    completed = run_cli(str(docx_path), "--json")
+
+    assert completed.returncode == 0, completed.stderr
+    result = json.loads(completed.stdout)
+    assert result["issue_count"] == 0
+    assert result["summary"]["title_paragraph_count"] == 1
+    assert result["summary"]["title_font_signature_count"] == 1
+    assert result["summary"]["title_size_count"] == 1
+    assert result["summary"]["punctuation_run_count"] >= 1
+    assert result["summary"]["punctuation_font_signature_count"] == 1
+
+
+def test_reports_mixed_title_and_punctuation_fonts(tmp_path):
+    docx_path = tmp_path / "mixed-format.docx"
+    write_docx(
+        docx_path,
+        {
+            "[Content_Types].xml": CONTENT_TYPES_XML,
+            "_rels/.rels": PACKAGE_RELS_XML,
+            "word/document.xml": MIXED_FORMAT_DOCUMENT_XML,
+            "word/_rels/document.xml.rels": EMPTY_DOCUMENT_RELS_XML,
+            "word/styles.xml": STYLES_XML,
+        },
+    )
+
+    completed = run_cli(str(docx_path), "--json")
+
+    assert completed.returncode == 0
+    result = json.loads(completed.stdout)
+    codes = {issue["code"] for issue in result["issues"]}
+    assert "title_font_mixed" in codes
+    assert "title_size_mixed" in codes
+    assert "punctuation_font_missing_east_asia" in codes
+    assert "punctuation_font_mixed" in codes
+    assert result["summary"]["punctuation_missing_east_asia_count"] >= 1
 
 
 def test_human_report_and_help_are_available(tmp_path):

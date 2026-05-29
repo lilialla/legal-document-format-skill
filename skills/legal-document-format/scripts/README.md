@@ -22,7 +22,7 @@
 
 ## `audit_text.py`
 
-审计文本或 UTF-8 文本文件中的法律文书标点、空格和占位符问题。
+审计文本或 UTF-8 文本文件中的法律文书标点、全半角混用、空格和占位符问题。当前会提示中文语境中的半角冒号、逗号、分号、问号、叹号、括号、英文直引号等常见问题。
 
 ```bash
 ./skills/legal-document-format/scripts/audit_text.py "申请人: 张三" --json
@@ -32,7 +32,7 @@
 
 ## `audit_docx_structure.py`
 
-使用 Python 标准库读取 DOCX ZIP/OpenXML 结构，报告关键包部件、section、段落、表格、页眉页脚、样式和编号。
+使用 Python 标准库读取 DOCX ZIP/OpenXML 结构，报告关键包部件、section、段落、表格、页眉页脚、样式和编号，并审计标题字体字号、标题内部字体字号混用、标点符号字体混乱和中文标点缺少 eastAsia 字体设置等问题。
 
 ```bash
 ./skills/legal-document-format/scripts/audit_docx_structure.py input.docx --json

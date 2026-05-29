@@ -13,6 +13,16 @@ from typing import Callable, Iterable
 
 
 CJK_RE = r"\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff"
+CJK_CHAR_RE = re.compile(rf"[{CJK_RE}]")
+
+HALFWIDTH_PUNCTUATION = {
+    ",": "逗号",
+    ";": "分号",
+    "?": "问号",
+    "!": "叹号",
+    "(": "左括号",
+    ")": "右括号",
+}
 
 
 @dataclass(frozen=True)
@@ -62,6 +72,27 @@ def _find_halfwidth_colon(line: str, line_number: int) -> Iterable[Issue]:
                 colon_index + 1,
                 line,
             )
+
+
+def _has_cjk_near(line: str, index: int, window: int = 3) -> bool:
+    start = max(0, index - window)
+    end = min(len(line), index + window + 1)
+    return bool(CJK_CHAR_RE.search(line[start:end]))
+
+
+def _find_halfwidth_punctuation_in_cjk_context(line: str, line_number: int) -> Iterable[Issue]:
+    for index, mark in enumerate(line):
+        if mark not in HALFWIDTH_PUNCTUATION:
+            continue
+        if not _has_cjk_near(line, index):
+            continue
+        yield _make_issue(
+            "HALFWIDTH_PUNCTUATION_CN",
+            f"中文语境中发现半角{HALFWIDTH_PUNCTUATION[mark]}，建议核对是否应使用全角标点。",
+            line_number,
+            index + 1,
+            line,
+        )
 
 
 def _find_straight_quotes(line: str, line_number: int) -> Iterable[Issue]:
@@ -151,6 +182,7 @@ CHECKS: tuple[Callable[[str, int], Iterable[Issue]], ...] = (
     _find_trailing_whitespace,
     _find_consecutive_spaces,
     _find_halfwidth_colon,
+    _find_halfwidth_punctuation_in_cjk_context,
     _find_straight_quotes,
     _find_mixed_width_punctuation,
     _find_empty_brackets,

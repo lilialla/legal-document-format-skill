@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img alt="发布状态" src="https://img.shields.io/badge/状态-v2.0.0%20精确模板版-blue">
+  <img alt="发布状态" src="https://img.shields.io/badge/状态-v2.0.1%20格式细节增强版-blue">
   <img alt="适用对象" src="https://img.shields.io/badge/适用对象-律师%20%2F%20法务%20%2F%20法律助理-7aa2a7">
   <img alt="文书格式" src="https://img.shields.io/badge/格式-DOCX%20%2F%20PDF%20%2F%20PNG-8aa0b2">
   <img alt="许可证" src="https://img.shields.io/badge/许可证-MIT-green">
@@ -58,7 +58,8 @@
 | 保留页眉、页脚和页码 | 支持，生成文件从模板复制而来。 |
 | 保留标题、字体、字号和段落样式 | 支持，默认不重建样式。 |
 | 检查行距、段落、分页和渲染结果 | 支持，需要安装 LibreOffice 和 Poppler。 |
-| 检查中文标点，例如全角冒号、引号 | 支持，作为格式检查的一部分。 |
+| 检查中文标点，例如全角冒号、引号 | 支持，覆盖常见全半角标点混用。 |
+| 检查标题字体、标题字号和标点字体混乱 | 支持，会提示标题字体字号不统一、中文标点回退到英文字体等风险。 |
 | 自动判断法律内容是否正确 | 不支持，这仍然属于律师审阅范围。 |
 | 不放占位符也自动猜哪些内容要替换 | 不支持，这样很容易改错位置。 |
 
@@ -161,6 +162,7 @@
 | 段落、缩进、行距 | 影响可读性，也影响机构格式要求。 |
 | 分页 | 签名区、落款、附件清单不应被挤到错误位置。 |
 | 中文标点 | 全角冒号、中文引号等问题在法律文书中很常见。 |
+| 标点字体 | 标点被设置成 Times New Roman 等英文字体时，版面会显得不统一。 |
 | 内容锁定 | 格式阶段不应改动事实、金额、日期、案号、请求、理由和主文。 |
 
 ## 需要安装什么
@@ -213,11 +215,11 @@ Word 有时会把一个词拆成多个小片段。如果 `{{CASE_NO}}` 中间被
 
 | 项目 | 说明 |
 |---|---|
-| 当前版本 | `v2.0.0 精确模板版` |
+| 当前版本 | `v2.0.1 格式细节增强版` |
 | 核心语言 | Python 3.9+ |
 | 主要文件格式 | DOCX、PDF、PNG、JSON |
 | 发布版强制工具 | LibreOffice、Poppler |
-| 当前验证结果 | `55 passed`，V2 release smoke 共 10 步通过 |
+| 当前验证结果 | `57 passed`，V2 release smoke 共 10 步通过 |
 | 安全策略 | synthetic 示例；不提交真实案件或私有模板 |
 
 ### 核心命令
@@ -269,8 +271,8 @@ python3 -m pip install -e ".[test]"
 |---|---|
 | `apply_docx_template.py` | 复制 DOCX 模板包结构并替换 `{{KEY}}` 文本占位符。 |
 | `compare_docx_template_parity.py` | 检查模板与输出除文本节点外的 OpenXML 结构是否一致。 |
-| `audit_text.py` | 检查中文法律文本中的标点和空格问题。 |
-| `audit_docx_structure.py` | 检查 DOCX 包结构、段落、表格、页眉页脚、样式、编号等。 |
+| `audit_text.py` | 检查中文法律文本中的标点、全半角混用和空格问题。 |
+| `audit_docx_structure.py` | 检查 DOCX 包结构、标题字体字号、标点字体、段落、表格、页眉页脚、样式、编号等。 |
 | `render_docx.sh` | 用 LibreOffice 和 Poppler 执行 DOCX -> PDF -> PNG。 |
 | `compare_rendered_pages.py` | 比较 PNG 渲染页的页数、尺寸、有效性、大小和哈希。 |
 | `format_gate.py` | 聚合文本、DOCX 和渲染页检查。 |
@@ -331,7 +333,7 @@ python3 -m pytest
 当前验证结果：
 
 ```text
-55 passed
+57 passed
 V2 Release Smoke Gate: 10 steps, 0 failures
 ```
 

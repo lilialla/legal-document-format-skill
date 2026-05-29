@@ -24,12 +24,13 @@ def load_audit_module():
 
 def test_audit_detects_core_punctuation_and_spacing_rules():
     audit_text = load_audit_module()
-    sample = '申请人: 张三  \n被申请人（公司)称："同意"。\n案由：《》'
+    sample = '申请人: 张三, 李四  \n被申请人（公司)称："同意"。\n案由：《》'
 
     issues = audit_text.audit_text(sample)
     codes = {issue.code for issue in issues}
 
     assert "HALFWIDTH_COLON_CN" in codes
+    assert "HALFWIDTH_PUNCTUATION_CN" in codes
     assert "STRAIGHT_QUOTE" in codes
     assert "CONSECUTIVE_SPACES" in codes
     assert "TRAILING_WHITESPACE" in codes
