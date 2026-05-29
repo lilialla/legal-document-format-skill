@@ -14,13 +14,14 @@
   · <a href="#agent-与插件策略">Agent 与插件策略</a>
   · <a href="#发布版强制校验">发布版强制校验</a>
   · <a href="#项目经验与外部参考">项目经验与外部参考</a>
-  · <a href="#v1-发布资料">V1 发布资料</a>
+  · <a href="#v2-精确模板生成">V2 精确模板生成</a>
+  · <a href="#v2-发布资料">V2 发布资料</a>
   · <a href="#脚本说明">脚本说明</a>
   · <a href="#隐私与安全">隐私与安全</a>
 </p>
 
 <p align="center">
-  <img alt="发布状态" src="https://img.shields.io/badge/状态-v1.0.0%20可发布-blue">
+  <img alt="发布状态" src="https://img.shields.io/badge/状态-v2.0.0%20精确模板版-blue">
   <img alt="Python 版本" src="https://img.shields.io/badge/Python-3.9%2B-blue">
   <img alt="视觉校验" src="https://img.shields.io/badge/视觉校验-LibreOffice%20%2B%20Poppler-7aa2a7">
   <img alt="许可证" src="https://img.shields.io/badge/许可证-MIT-green">
@@ -35,7 +36,7 @@
 
 | 项目 | 说明 |
 |---|---|
-| 发布状态 | `v1.0.0 可发布版` |
+| 发布状态 | `v2.0.0 精确模板版` |
 | 核心运行时 | Python 3.9+，核心审计脚本仅使用标准库 |
 | 发布版强制工具 | LibreOffice + Poppler，用于 DOCX -> PDF -> PNG 视觉校验 |
 | 主要输出 | JSON 报告、人类可读门禁报告、PDF/PNG 渲染产物 |
@@ -44,9 +45,9 @@
 
 ## 发布状态
 
-`v1.0.0 可发布版`
+`v2.0.0 精确模板版`
 
-当前版本适合本地试用、Skill 打包实验、公开展示和 V1 发布。对外分发时，应按“发布版强制校验”安装视觉校验工具；只安装 Python 的 `core` 档位仅用于开发、演示或无渲染环境的预检，不应被称为完整发布版。
+当前版本适合本地试用、Skill 打包实验、公开展示和 V2 精确模板生成。对外分发时，应按“发布版强制校验”安装视觉校验工具；只安装 Python 的 `core` 档位仅用于开发、演示或无渲染环境的预检，不应被称为完整发布版。
 
 ## 推荐 Topics
 
@@ -62,6 +63,7 @@ document-automation visual-validation quality-gate python synthetic-data
 - 按任务复杂度分层加载规则：文本清理、普通 DOCX 排版、精确模板套版、裁决书风格定稿、视觉校验。
 - 在格式阶段执行内容锁定：不静默改动当事人、日期、金额、法条、请求、认定、理由、主文、签名和附件清单。
 - 强调精确模板继承：需要高度一致时，应从用户提供的 DOCX 母版出发，而不是从空白文档“仿一个差不多的”。
+- 提供 V2 模板生成链路：复制用户 DOCX 模板包，只替换 `{{KEY}}` 文本占位符，并用 OpenXML 模板一致性门禁证明页眉、页脚、样式、分节、页码字段和编号未漂移。
 - 提供本地质量门禁：文本审计、DOCX OpenXML 结构审计、渲染页比较、聚合门禁报告。
 - 提供 synthetic DOCX 生成器，方便演示和 smoke test，不暴露真实材料。
 
@@ -70,6 +72,7 @@ document-automation visual-validation quality-gate python synthetic-data
 - 不提供法律意见。
 - 不承诺自动生成可提交法院或仲裁机构的正式文件。
 - 不包含真实案件、私有仲裁模板、客户事实、机构特定规则或保密示例。
+- 不承诺对没有占位符的任意 DOCX 自动猜测应替换内容。V2 精确生成要求模板中存在单个文本节点内的 `{{KEY}}` 占位符；跨多个 Word run 的占位符会被门禁阻断。
 - 不内置第三方像素级视觉 diff。当前 PNG 比较覆盖页数、尺寸、有效性、大小和文件哈希；如需像素级或 PDF 高亮差异，可接入 `diff-pdf`、`diff-pdf-visually` 或同类工具。
 - 不提供托管服务或远程处理路径。当前工具以本地执行为主。
 
@@ -79,6 +82,8 @@ document-automation visual-validation quality-gate python synthetic-data
 |---|---|---|---|
 | 文本与标点审计 | `audit_text.py` | Python 3.9+ | 可用 |
 | DOCX OpenXML 结构审计 | `audit_docx_structure.py` | Python 3.9+ | 可用 |
+| DOCX 模板占位符生成 | `apply_docx_template.py` | Python 3.9+ | 可用 |
+| DOCX 模板一致性门禁 | `compare_docx_template_parity.py` | Python 3.9+ | 可用 |
 | DOCX -> PDF -> PNG 渲染 | `render_docx.sh` | LibreOffice + Poppler | 可用 |
 | PNG 渲染页比较 | `compare_rendered_pages.py` | Python 3.9+ | 可用 |
 | 发布版依赖检查 | `check_release_requirements.py` | Python 3.9+；发布档要求 LibreOffice + Poppler | 可用 |
@@ -155,6 +160,54 @@ python3 -m pip install -e ".[test]"
 ./skills/legal-document-format/scripts/release_smoke.py
 ```
 
+## V2 精确模板生成
+
+V2 的核心原则是：**输出文件必须从用户提供的 DOCX 模板包复制而来，只替换模板中明确标记的文本占位符，不能从空白 DOCX 重建版式。**
+
+模板中使用 `{{KEY}}` 占位符，例如：
+
+```text
+案号：{{CASE_NO}}
+申请人：{{CLAIMANT}}
+被申请人：{{RESPONDENT}}
+```
+
+准备替换数据：
+
+```json
+{
+  "CASE_NO": "SYN-2026-0001",
+  "CLAIMANT": "甲方贸易有限公司",
+  "RESPONDENT": "乙方设备有限公司"
+}
+```
+
+生成文件并检查模板一致性：
+
+```bash
+./skills/legal-document-format/scripts/apply_docx_template.py \
+  template.docx output.docx \
+  --replacements-json replacements.json \
+  --json
+
+./skills/legal-document-format/scripts/compare_docx_template_parity.py \
+  template.docx output.docx \
+  --json
+```
+
+模板一致性门禁会忽略 `w:t` 等文本节点内容差异，但要求 DOCX 包结构、样式、页眉页脚、分节、页码字段、编号、关系和非文本部件保持一致。随后应继续执行渲染和格式门禁：
+
+```bash
+./skills/legal-document-format/scripts/render_docx.sh output.docx out/rendered
+./skills/legal-document-format/scripts/format_gate.py \
+  --docx output.docx \
+  --baseline-png out/rendered/png \
+  --candidate-png out/rendered/png \
+  --require-visual \
+  --fail-on-warning \
+  --json
+```
+
 ## 分发档位
 
 以下为发布能力档位，不是 `pip` extras 名称。
@@ -220,11 +273,13 @@ mkdir -p out
 |---|---|
 | `audit_text.py` | 审计中文法律文本中的标点和空格问题。 |
 | `audit_docx_structure.py` | 读取 DOCX ZIP/OpenXML，报告 section、段落、表格、页眉页脚、样式、编号和损坏的关键 part。 |
+| `apply_docx_template.py` | 从用户 DOCX 模板复制包结构并替换 `{{KEY}}` 文本占位符。 |
+| `compare_docx_template_parity.py` | 对比模板和输出，确认除文本节点外的 OpenXML 布局结构保持一致。 |
 | `render_docx.sh` | 使用 LibreOffice headless 和 Poppler 执行 DOCX -> PDF -> PNG。 |
 | `compare_rendered_pages.py` | 比较 PNG 渲染页目录的页数、文件名、PNG 有效性、尺寸、文件大小和页面文件哈希差异。 |
 | `check_release_requirements.py` | 检查发布版所需的 Python、LibreOffice 和 Poppler 是否可用。 |
 | `format_gate.py` | 将文本、DOCX 和渲染页检查聚合为一个 JSON 或人类可读报告。 |
-| `release_smoke.py` | 一键运行 V1 发布 smoke gate，包括并行 LibreOffice 渲染检查。 |
+| `release_smoke.py` | 一键运行 V2 发布 smoke gate，包括模板生成、模板一致性、并行 LibreOffice 渲染检查。 |
 | `make_synthetic_docx.py` | 创建 synthetic DOCX，用于演示和 smoke test。 |
 
 ## 仓库结构
@@ -256,9 +311,11 @@ legal-document-format-skill/
 │       │   └── visual-validation.md
 │       ├── scripts/
 │       │   ├── README.md
+│       │   ├── apply_docx_template.py
 │       │   ├── audit_docx_structure.py
 │       │   ├── audit_text.py
 │       │   ├── check_release_requirements.py
+│       │   ├── compare_docx_template_parity.py
 │       │   ├── compare_rendered_pages.py
 │       │   ├── format_gate.py
 │       │   ├── release_smoke.py
@@ -296,7 +353,7 @@ python3 -m pytest
 当前本地验证结果：
 
 ```text
-51 passed
+55 passed
 ```
 
 ## 项目经验与外部参考
@@ -312,6 +369,9 @@ python3 -m pytest
 | 项目 | 借鉴点 | 本项目取舍 |
 |---|---|---|
 | [GitHub README 官方说明](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes) | README 应说明项目做什么、为什么有用、如何开始、如何获得帮助。 | 首页保留标题、Logo、Badges、快速开始、依赖、脚本、隐私和路线图。 |
+| [python-docx-template / docxtpl](https://github.com/elapouya/python-docx-template) | 在 Word 模板中放置变量，再用数据渲染生成 DOCX。 | 借鉴“模板先行、变量替换”的交互模型；V2 默认只替换文本占位符并保持低依赖。 |
+| [docx4j](https://github.com/plutext/docx4j) | Java 生态中面向 OpenXML 包、变量、内容控件和 MERGEFIELD 的重型处理能力。 | 作为后续内容控件、复杂块替换和更深 OpenXML 操作的参考；V2 不引入 Java 运行时。 |
+| [docx-mailmerge](https://github.com/Bouke/docx-mailmerge) | 以 Office Open XML mail merge 字段生成 DOCX。 | 借鉴字段化模板思路；当前项目避免依赖已归档库作为发布默认路径。 |
 | [python-docx](https://github.com/python-openxml/python-docx) | DOCX 读写生态的事实标准之一。 | 暂不作为核心依赖；当前以标准库检查 OpenXML，降低安装面。 |
 | [diff-pdf](https://github.com/vslavik/diff-pdf) | PDF 视觉比较和差异高亮。 | 作为增强视觉 diff 参考；默认链路仍是 LibreOffice + Poppler + PNG 渲染页门禁。 |
 | [diff-pdf-visually](https://github.com/bgeron/diff-pdf-visually) | PDF 转 PNG 后做页面视觉一致性判断。 | 借鉴“页数、尺寸、渲染图比较”的思路。 |
@@ -319,14 +379,14 @@ python3 -m pytest
 
 参考范围：截至 2026-05-29，仅用于公开功能定位和工程机制取舍，不等同于完整竞品审计。
 
-## V1 发布资料
+## V2 发布资料
 
 - [CHANGELOG.md](CHANGELOG.md)：公开版本变化。
-- [RELEASE.md](RELEASE.md)：V1 发布范围、发布前命令和当前证据。
+- [RELEASE.md](RELEASE.md)：V2 发布范围、发布前命令和当前证据。
 - [CONTRIBUTING.md](CONTRIBUTING.md)：贡献、验证和文档规则。
 - [SECURITY.md](SECURITY.md)：安全报告和敏感信息处理规则。
 
-说明：当前仓库写入凭证没有 GitHub workflow scope，V1 以本地 `release_smoke.py` 作为发布门禁；启用 GitHub Actions 后应复用同一命令。
+说明：当前仓库写入凭证没有 GitHub workflow scope，V2 以本地 `release_smoke.py` 作为发布门禁；启用 GitHub Actions 后应复用同一命令。
 
 ## 格式门禁口径
 

@@ -54,6 +54,8 @@ def test_generates_docx_that_structure_audit_accepts(tmp_path):
     assert audit["summary"]["has_document_relationships"] is True
     assert audit["summary"]["has_styles"] is True
     assert audit["summary"]["has_numbering"] is True
+    assert audit["summary"]["has_header_parts"] is True
+    assert audit["summary"]["has_footer_parts"] is True
     assert audit["summary"]["paragraph_count"] >= 5
     assert audit["summary"]["section_count"] == 1
 
@@ -79,6 +81,8 @@ def test_force_overwrites_existing_file(tmp_path):
     assert output.read_bytes() != b"existing"
     with zipfile.ZipFile(output) as docx:
         assert "word/document.xml" in docx.namelist()
+        assert "word/header1.xml" in docx.namelist()
+        assert "word/footer1.xml" in docx.namelist()
 
 
 def test_custom_title_and_case_no_are_written_to_document_xml(tmp_path):

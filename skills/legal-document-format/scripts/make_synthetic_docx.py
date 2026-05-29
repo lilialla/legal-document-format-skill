@@ -37,6 +37,8 @@ def content_types_xml() -> str:
   <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
   <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
   <Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/>
+  <Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/>
+  <Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>
 </Types>
 """
 
@@ -54,6 +56,8 @@ def document_relationships_xml() -> str:
 <Relationships xmlns="{REL_NS}">
   <Relationship Id="rId1" Type="{OFFICE_REL_NS}/styles" Target="styles.xml"/>
   <Relationship Id="rId2" Type="{OFFICE_REL_NS}/numbering" Target="numbering.xml"/>
+  <Relationship Id="rId3" Type="{OFFICE_REL_NS}/header" Target="header1.xml"/>
+  <Relationship Id="rId4" Type="{OFFICE_REL_NS}/footer" Target="footer1.xml"/>
 </Relationships>
 """
 
@@ -71,15 +75,43 @@ def document_xml(title: str, case_no: str) -> str:
         ]
     )
     return f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="{WORD_NS}">
+<w:document xmlns:w="{WORD_NS}" xmlns:r="{OFFICE_REL_NS}">
   <w:body>
     {body}
     <w:sectPr>
+      <w:headerReference w:type="default" r:id="rId3"/>
+      <w:footerReference w:type="default" r:id="rId4"/>
       <w:pgSz w:w="11906" w:h="16838"/>
       <w:pgMar w:top="1440" w:right="1800" w:bottom="1440" w:left="1800" w:header="720" w:footer="720" w:gutter="0"/>
     </w:sectPr>
   </w:body>
 </w:document>
+"""
+
+
+def header_xml() -> str:
+    return f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:hdr xmlns:w="{WORD_NS}">
+  <w:p>
+    <w:pPr><w:jc w:val="center"/></w:pPr>
+    <w:r><w:t>Synthetic Header / 文书模板页眉</w:t></w:r>
+  </w:p>
+</w:hdr>
+"""
+
+
+def footer_xml() -> str:
+    return f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:ftr xmlns:w="{WORD_NS}">
+  <w:p>
+    <w:pPr><w:jc w:val="center"/></w:pPr>
+    <w:r><w:t>第 </w:t></w:r>
+    <w:r><w:fldChar w:fldCharType="begin"/></w:r>
+    <w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>
+    <w:r><w:fldChar w:fldCharType="end"/></w:r>
+    <w:r><w:t> 页</w:t></w:r>
+  </w:p>
+</w:ftr>
 """
 
 
@@ -126,6 +158,8 @@ def docx_parts(title: str, case_no: str) -> dict[str, str]:
         "word/_rels/document.xml.rels": document_relationships_xml(),
         "word/styles.xml": styles_xml(),
         "word/numbering.xml": numbering_xml(),
+        "word/header1.xml": header_xml(),
+        "word/footer1.xml": footer_xml(),
     }
 
 

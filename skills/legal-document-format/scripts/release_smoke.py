@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the V1 release smoke gate for the legal document format skill."""
+"""Run the V2 release smoke gate for the legal document format skill."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ class StepResult:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run the repository V1 release smoke gate.")
+    parser = argparse.ArgumentParser(description="Run the repository V2 release smoke gate.")
     parser.add_argument(
         "--skip-tests",
         action="store_true",
@@ -158,9 +158,32 @@ def run_release_smoke(skip_tests: bool) -> dict[str, object]:
 
     with tempfile.TemporaryDirectory(prefix="wenge-release-") as tmp:
         tmp_path = Path(tmp)
-        docx_path = tmp_path / "synthetic.docx"
+        template_path = tmp_path / "template.docx"
+        replacements_path = tmp_path / "replacements.json"
+        docx_path = tmp_path / "generated.docx"
         rendered_path = tmp_path / "rendered"
-        steps.append(run_step("synthetic_docx", [str(SCRIPT_DIR / "make_synthetic_docx.py"), str(docx_path)]))
+        replacements_path.write_text(
+            json.dumps({"TITLE": "Synthetic DOCX 示例文书", "CASE_NO": "SYNTHETIC-CASE-NO-0001"}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        steps.append(
+            run_step(
+                "synthetic_template_docx",
+                [str(SCRIPT_DIR / "make_synthetic_docx.py"), str(template_path), "--title", "{{TITLE}}", "--case-no", "{{CASE_NO}}"],
+            )
+        )
+        steps.append(
+            run_step(
+                "template_apply",
+                [str(SCRIPT_DIR / "apply_docx_template.py"), str(template_path), str(docx_path), "--replacements-json", str(replacements_path), "--json"],
+            )
+        )
+        steps.append(
+            run_step(
+                "template_parity",
+                [str(SCRIPT_DIR / "compare_docx_template_parity.py"), str(template_path), str(docx_path), "--json"],
+            )
+        )
         steps.append(run_step("render_docx", [str(SCRIPT_DIR / "render_docx.sh"), str(docx_path), str(rendered_path)]))
         steps.append(run_parallel_render_step(docx_path, tmp_path))
         png_dir = rendered_path / "png"
@@ -199,7 +222,7 @@ def run_release_smoke(skip_tests: bool) -> dict[str, object]:
 
 def format_human_report(report: dict[str, object]) -> str:
     lines = [
-        "V1 Release Smoke Gate",
+        "V2 Release Smoke Gate",
         "",
         f"Status: {str(report['status']).upper()}",
         f"Steps: {report['step_count']} (failures={report['failure_count']})",

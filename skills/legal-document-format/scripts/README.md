@@ -38,6 +38,29 @@
 ./skills/legal-document-format/scripts/audit_docx_structure.py input.docx --json
 ```
 
+## `apply_docx_template.py`
+
+从用户提供的 DOCX 模板复制完整包结构，只替换模板中已有的 `{{KEY}}` 文本占位符。页眉、页脚、分节、样式、编号、页码字段和媒体均继承自模板。
+
+```bash
+./skills/legal-document-format/scripts/apply_docx_template.py \
+  template.docx output.docx \
+  --replacements-json replacements.json \
+  --json
+```
+
+也可以使用多个 `--set KEY=VALUE`。
+
+## `compare_docx_template_parity.py`
+
+检查生成文件是否保持模板的 OpenXML 布局结构。该门禁忽略 `w:t`、`w:instrText`、`w:delText` 的文本内容差异，但要求结构、样式、页眉页脚、分节、编号、关系和非文本部件一致。
+
+```bash
+./skills/legal-document-format/scripts/compare_docx_template_parity.py \
+  template.docx output.docx \
+  --json
+```
+
 ## `compare_rendered_pages.py`
 
 比较两个 PNG 渲染页目录。内置门禁检查页数、文件名、PNG 有效性、尺寸、文件大小和文件哈希；它仍不是第三方像素级 diff。
@@ -69,7 +92,7 @@
 
 ## `release_smoke.py`
 
-运行 V1 发布 smoke gate，覆盖发布依赖、shell 语法、Python 编译、synthetic DOCX、DOCX 渲染、3 路并行 LibreOffice 渲染、强制视觉格式门禁和 pytest。
+运行 V2 发布 smoke gate，覆盖发布依赖、shell 语法、Python 编译、synthetic 模板 DOCX、模板应用、模板一致性、DOCX 渲染、3 路并行 LibreOffice 渲染、强制视觉格式门禁和 pytest。
 
 ```bash
 ./skills/legal-document-format/scripts/release_smoke.py

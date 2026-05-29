@@ -9,6 +9,7 @@
 - 从格式任务入口先分层路由，避免普通排版、精确模板套版和裁决书风格定稿混用。
 - 格式阶段必须执行内容锁定，不能因为排版修改当事人、日期、金额、请求、认定、理由、主文、签名或附件清单。
 - 精确模板任务必须从用户提供的 DOCX 母版出发，不能从空白 Word 文件凭视觉记忆仿制。
+- V2 精确模板任务采用 base-replace：复制模板 DOCX 包结构，只替换明确文本占位符，再用模板一致性门禁证明结构未漂移。
 - DOCX 交付前要同时检查文本、OpenXML 结构、渲染结果和人工可读报告。
 - 视觉校验默认使用 LibreOffice headless 渲染 PDF，再用 Poppler 输出 PNG 页面。
 - 示例和测试只使用 synthetic 数据，避免真实法律材料进入公开仓库。
@@ -23,6 +24,7 @@
 | 格式清单 | `references/format-checklist.md` |
 | 视觉校验 | `references/visual-validation.md` |
 | 失败模式 | `references/failure-modes.md` |
+| V2 模板生成与一致性门禁 | `scripts/apply_docx_template.py`、`scripts/compare_docx_template_parity.py` |
 | 本地门禁脚本 | `scripts/` |
 
 ## 未公开内容
@@ -40,6 +42,7 @@
 本项目参考开源生态中的机制，但不盲目扩大默认依赖：
 
 - `python-docx`：说明 DOCX 读写生态成熟，但本项目核心检查优先使用 Python 标准库读取 ZIP/OpenXML，以降低安装负担。
+- `python-docx-template` / `docxtpl`：说明“用户在 Word 模板中放置变量，再渲染为 DOCX”是成熟路线；本项目借鉴该交互模型，但 V2 默认只做最保守的文本占位符替换，以最大化保留原模板结构。
 - `diff-pdf`：说明 PDF 视觉比较可以作为增强能力，尤其适合输出高亮差异 PDF。
 - `diff-pdf-visually`：说明 PDF 转 PNG 后做页面视觉一致性判断是合理方向，和本项目 LibreOffice + Poppler 链路一致。
 - `pdf-visual-diff`：说明 snapshot 式视觉回归适合长期模板基线管理，但 Node/Jest 不作为默认运行时。
