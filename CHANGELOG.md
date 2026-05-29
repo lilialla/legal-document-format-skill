@@ -2,6 +2,12 @@
 
 本项目遵循语义化版本思路记录公开发布变化。
 
+## Unreleased
+
+### 新增
+
+- `audit_docx_structure.py` 新增中文弯引号字体一致性审计：含 `“”‘’` 的 run 应让 `ascii`、`hAnsi`、`eastAsia`、`cs` 与中文字体一致，避免 WPS/Word 将引号回退为西文字体。
+
 ## 2.2.0 - 2026-05-29
 
 ### 调整

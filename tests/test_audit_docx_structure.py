@@ -134,6 +134,28 @@ DOCX_HALFWIDTH_PUNCTUATION_XML = """<?xml version="1.0" encoding="UTF-8"?>
 </w:document>
 """
 
+CJK_QUOTE_FONT_MISMATCH_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:r><w:rPr><w:rFonts w:eastAsia="FangSong"/></w:rPr><w:t>依据“合作协议”确认。</w:t></w:r>
+    </w:p>
+    <w:sectPr/>
+  </w:body>
+</w:document>
+"""
+
+CJK_QUOTE_FONT_ALIGNED_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:r><w:rPr><w:rFonts w:eastAsia="FangSong" w:ascii="FangSong" w:hAnsi="FangSong" w:cs="FangSong"/></w:rPr><w:t>依据“合作协议”确认。</w:t></w:r>
+    </w:p>
+    <w:sectPr/>
+  </w:body>
+</w:document>
+"""
+
 
 def write_docx(path, parts):
     with zipfile.ZipFile(path, "w") as docx:
@@ -321,6 +343,50 @@ def test_reports_docx_halfwidth_punctuation_issue(tmp_path):
     result = json.loads(completed.stdout)
     assert any(issue["code"] == "halfwidth_punctuation_cn" for issue in result["issues"])
     assert result["summary"]["halfwidth_punctuation_run_count"] >= 1
+
+
+def test_reports_cjk_quote_font_mismatch(tmp_path):
+    docx_path = tmp_path / "quote-mismatch.docx"
+    write_docx(
+        docx_path,
+        {
+            "[Content_Types].xml": CONTENT_TYPES_XML,
+            "_rels/.rels": PACKAGE_RELS_XML,
+            "word/document.xml": CJK_QUOTE_FONT_MISMATCH_XML,
+            "word/_rels/document.xml.rels": EMPTY_DOCUMENT_RELS_XML,
+            "word/styles.xml": STYLES_XML,
+        },
+    )
+
+    completed = run_cli(str(docx_path), "--json")
+
+    assert completed.returncode == 0
+    result = json.loads(completed.stdout)
+    assert any(issue["code"] == "cjk_quote_font_mismatch" for issue in result["issues"])
+    assert result["summary"]["cjk_quote_run_count"] == 1
+    assert result["summary"]["cjk_quote_font_mismatch_count"] == 1
+
+
+def test_accepts_cjk_quote_font_aligned_with_chinese_font(tmp_path):
+    docx_path = tmp_path / "quote-aligned.docx"
+    write_docx(
+        docx_path,
+        {
+            "[Content_Types].xml": CONTENT_TYPES_XML,
+            "_rels/.rels": PACKAGE_RELS_XML,
+            "word/document.xml": CJK_QUOTE_FONT_ALIGNED_XML,
+            "word/_rels/document.xml.rels": EMPTY_DOCUMENT_RELS_XML,
+            "word/styles.xml": STYLES_XML,
+        },
+    )
+
+    completed = run_cli(str(docx_path), "--json")
+
+    assert completed.returncode == 0
+    result = json.loads(completed.stdout)
+    assert not any(issue["code"] == "cjk_quote_font_mismatch" for issue in result["issues"])
+    assert result["summary"]["cjk_quote_run_count"] == 1
+    assert result["summary"]["cjk_quote_font_mismatch_count"] == 0
 
 
 def test_reports_footer_without_page_field(tmp_path):

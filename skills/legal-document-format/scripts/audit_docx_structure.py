@@ -18,6 +18,7 @@ REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
 NS = {"w": WORD_NS, "rel": REL_NS}
 TITLE_STYLE_IDS = {"Title", "Heading1", "Heading 1", "标题", "标题1", "标题 1"}
 CJK_PUNCTUATION = set("，。、；：？！“”‘’（）《》〈〉【】、")
+CJK_QUOTES = set("“”‘’")
 HALFWIDTH_PUNCTUATION = set(",;:?!()\"'")
 CJK_CHAR_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
 PAGE_FIELD_RE = re.compile(r"\bPAGE\b", re.IGNORECASE)
@@ -348,6 +349,8 @@ def audit_punctuation_fonts(
     cjk_punctuation_run_count = 0
     halfwidth_punctuation_run_count = 0
     missing_east_asia_count = 0
+    cjk_quote_run_count = 0
+    cjk_quote_font_mismatch_count = 0
     signatures: set[tuple[str | None, str | None, str | None, str | None, str | None]] = set()
     default_fonts = style_defaults.get("Normal", {}).get("fonts", {})
     default_size = style_defaults.get("Normal", {}).get("size")
@@ -366,8 +369,10 @@ def audit_punctuation_fonts(
                     continue
                 punctuation_run_count += 1
                 has_cjk_punctuation = any(mark in text for mark in CJK_PUNCTUATION)
+                has_cjk_quote = any(mark in text for mark in CJK_QUOTES)
                 has_halfwidth_punctuation = any(mark in text for mark in HALFWIDTH_PUNCTUATION)
                 cjk_punctuation_run_count += int(has_cjk_punctuation)
+                cjk_quote_run_count += int(has_cjk_quote)
                 halfwidth_punctuation_run_count += int(has_halfwidth_punctuation)
                 if has_halfwidth_punctuation and has_cjk_context(paragraph_plain_text):
                     issues.append(
@@ -394,6 +399,17 @@ def audit_punctuation_fonts(
                             part,
                         )
                     )
+                east_asia_font = fonts.get("eastAsia")
+                if has_cjk_quote and east_asia_font and any(fonts.get(key) != east_asia_font for key in ("ascii", "hAnsi", "cs")):
+                    cjk_quote_font_mismatch_count += 1
+                    issues.append(
+                        make_issue(
+                            "cjk_quote_font_mismatch",
+                            "warning",
+                            "中文弯引号所在 run 的 ascii/hAnsi/cs 字体未与 eastAsia 中文字体一致，WPS/Word 可能将引号回退为西文字体。",
+                            part,
+                        )
+                    )
 
     if len(signatures) > 1:
         issues.append(
@@ -410,6 +426,8 @@ def audit_punctuation_fonts(
         "halfwidth_punctuation_run_count": halfwidth_punctuation_run_count,
         "punctuation_font_signature_count": len(signatures),
         "punctuation_missing_east_asia_count": missing_east_asia_count,
+        "cjk_quote_run_count": cjk_quote_run_count,
+        "cjk_quote_font_mismatch_count": cjk_quote_font_mismatch_count,
     }
 
 
@@ -510,6 +528,8 @@ def audit_docx(path: Path) -> dict[str, Any]:
         "halfwidth_punctuation_run_count": 0,
         "punctuation_font_signature_count": 0,
         "punctuation_missing_east_asia_count": 0,
+        "cjk_quote_run_count": 0,
+        "cjk_quote_font_mismatch_count": 0,
         "page_field_count": 0,
         "numpages_field_count": 0,
         "section_header_reference_count": 0,
@@ -659,6 +679,8 @@ def format_report(result: dict[str, Any]) -> str:
         f"- punctuation runs: {summary['punctuation_run_count']}",
         f"- punctuation font signatures: {summary['punctuation_font_signature_count']}",
         f"- punctuation missing eastAsia font: {summary['punctuation_missing_east_asia_count']}",
+        f"- CJK quote runs: {summary['cjk_quote_run_count']}",
+        f"- CJK quote font mismatches: {summary['cjk_quote_font_mismatch_count']}",
         f"- PAGE fields: {summary['page_field_count']}",
         f"- NUMPAGES fields: {summary['numpages_field_count']}",
         f"- section header references: {summary['section_header_reference_count']}",
