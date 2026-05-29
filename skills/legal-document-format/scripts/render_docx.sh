@@ -8,6 +8,9 @@ Usage:
 
 Renders a DOCX to PDF with LibreOffice headless, then renders PDF pages to PNG
 with Poppler pdftoppm.
+
+Optional:
+  WENGE_RENDER_TIMEOUT_SECONDS=120 render_docx.sh INPUT.docx OUTPUT_DIR
 USAGE
 }
 
@@ -65,6 +68,25 @@ if ! command -v pdftoppm >/dev/null 2>&1; then
 fi
 
 mkdir -p "$output_dir/pdf" "$output_dir/png"
+render_timeout=${WENGE_RENDER_TIMEOUT_SECONDS:-120}
+
+run_with_timeout() {
+  local timeout_seconds=$1
+  shift
+  "$@" &
+  local pid=$!
+  local deadline=$((SECONDS + timeout_seconds))
+  while kill -0 "$pid" >/dev/null 2>&1; do
+    if (( SECONDS >= deadline )); then
+      kill "$pid" >/dev/null 2>&1 || true
+      wait "$pid" >/dev/null 2>&1 || true
+      echo "Command timed out after ${timeout_seconds}s: $*" >&2
+      return 124
+    fi
+    sleep 1
+  done
+  wait "$pid"
+}
 
 input_abs=$(cd "$(dirname "$input_docx")" && pwd)/$(basename "$input_docx")
 stem=$(basename "$input_docx")
@@ -76,7 +98,7 @@ cleanup() {
 trap cleanup EXIT
 profile_uri=$(python3 -c 'from pathlib import Path; import sys; print(Path(sys.argv[1]).resolve().as_uri())' "$profile_dir")
 
-"$soffice_bin" \
+run_with_timeout "$render_timeout" "$soffice_bin" \
   "-env:UserInstallation=$profile_uri" \
   --headless \
   --convert-to pdf \
@@ -89,7 +111,7 @@ if [[ ! -f "$pdf_path" ]]; then
   exit 1
 fi
 
-pdftoppm -png -r 150 "$pdf_path" "$output_dir/png/${stem}-page" >/dev/null
+run_with_timeout "$render_timeout" pdftoppm -png -r 150 "$pdf_path" "$output_dir/png/${stem}-page" >/dev/null
 
 if ! compgen -G "$output_dir/png/${stem}-page-*.png" >/dev/null; then
   echo "pdftoppm did not produce PNG pages in: $output_dir/png" >&2

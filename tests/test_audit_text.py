@@ -65,6 +65,23 @@ def test_json_cli_accepts_file_input(tmp_path):
     assert payload["issues"][0]["code"]
     assert payload["issues"][0]["line"] == 1
     assert payload["issues"][0]["severity"]
+    assert payload["issues"][0]["excerpt"] == ""
+
+
+def test_json_cli_can_include_excerpts_for_debugging(tmp_path):
+    input_file = tmp_path / "sample.txt"
+    input_file.write_text("申请人: 张三\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT_PATH), str(input_file), "--json", "--with-excerpt"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = json.loads(result.stdout)
+
+    assert payload["issue_count"] >= 1
+    assert any(issue["excerpt"] == "申请人: 张三" for issue in payload["issues"])
 
 
 def test_json_cli_can_omit_excerpts_for_sensitive_text(tmp_path):
@@ -159,3 +176,4 @@ def test_cli_help_and_executable_bit():
     assert "--json" in result.stdout
     assert "--file" in result.stdout
     assert "--no-excerpt" in result.stdout
+    assert "--with-excerpt" in result.stdout

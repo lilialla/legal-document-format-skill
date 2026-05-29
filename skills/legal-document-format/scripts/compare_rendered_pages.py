@@ -7,7 +7,6 @@ import argparse
 import hashlib
 import json
 import struct
-import sys
 import zlib
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +15,8 @@ from typing import Any
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 SIZE_DELTA_WARNING_THRESHOLD = 0
+MAX_PNG_BYTES = 50 * 1024 * 1024
+HASH_CHUNK_SIZE = 1024 * 1024
 
 
 @dataclass(frozen=True)
@@ -52,15 +53,23 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Write a structured JSON report instead of a human-readable report.",
     )
+    parser.add_argument(
+        "--fail-on-warning",
+        action="store_true",
+        help="Return exit code 1 when warnings such as size or content deltas are present.",
+    )
     return parser.parse_args(argv)
 
 
 def read_png_info(path: Path) -> tuple[bool, int | None, int | None, str | None]:
     try:
-        data = path.read_bytes()
+        with path.open("rb") as handle:
+            data = handle.read(MAX_PNG_BYTES + 1)
     except OSError as exc:
         return False, None, None, f"cannot read PNG: {exc}"
 
+    if len(data) > MAX_PNG_BYTES:
+        return False, None, None, f"PNG exceeds maximum supported size of {MAX_PNG_BYTES} bytes"
     if len(data) < 33:
         return False, None, None, "file is too small to contain a complete PNG IHDR chunk"
     if data[:8] != PNG_SIGNATURE:
@@ -115,10 +124,14 @@ def read_png_info(path: Path) -> tuple[bool, int | None, int | None, str | None]
 
 
 def file_sha256(path: Path) -> str | None:
+    digest = hashlib.sha256()
     try:
-        return hashlib.sha256(path.read_bytes()).hexdigest()
+        with path.open("rb") as handle:
+            while chunk := handle.read(HASH_CHUNK_SIZE):
+                digest.update(chunk)
     except OSError:
         return None
+    return digest.hexdigest()
 
 
 def collect_png_pages(directory: Path) -> tuple[dict[str, PageInfo], list[dict[str, Any]]]:
@@ -382,7 +395,11 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(format_human_report(report))
 
-    return 1 if report["summary"]["error_count"] else 0
+    if report["summary"]["error_count"]:
+        return 1
+    if args.fail_on_warning and report["summary"]["warning_count"]:
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

@@ -150,6 +150,24 @@ def test_cli_returns_zero_for_warning_only_size_delta(tmp_path: Path):
     assert any(item["code"] == "content_delta" for item in payload["issues"])
 
 
+def test_cli_fail_on_warning_returns_one_for_content_delta(tmp_path: Path):
+    baseline = tmp_path / "baseline"
+    candidate = tmp_path / "candidate"
+    write_png(baseline, "doc-page-1.png", 800, 1000)
+    write_png(candidate, "doc-page-1.png", 800, 1000, b"candidate-size-delta")
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT_PATH), str(baseline), str(candidate), "--json", "--fail-on-warning"],
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+
+    payload = json.loads(result.stdout)
+    assert result.returncode == 1
+    assert payload["summary"]["status"] == "warning"
+
+
 def test_compare_reports_content_delta_for_same_size_different_png(tmp_path: Path):
     module = load_module()
     baseline = tmp_path / "baseline"
@@ -174,6 +192,7 @@ def test_cli_help_runs():
     assert result.returncode == 0
     assert "BASELINE_DIR" in result.stdout
     assert "--json" in result.stdout
+    assert "--fail-on-warning" in result.stdout
 
 
 def test_cli_json_output(tmp_path: Path):

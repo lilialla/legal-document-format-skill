@@ -2,6 +2,23 @@
 
 本项目遵循语义化版本思路记录公开发布变化。
 
+## 2.1.0 - 2026-05-29
+
+### 修复
+
+- 支持替换同一段落内被 Word 拆分到多个 run/text 节点的 `{{KEY}}` 占位符。
+- 模板应用失败时不再留下目标 DOCX，避免后续流水线误用失败产物。
+- `compare_rendered_pages.py` 增加 `--fail-on-warning`，可将 PNG 大小或内容差异升级为阻断门禁。
+- `compare_docx_template_parity.py` 不再忽略 `w:instrText`，页码字段等 field code 变化会被模板一致性门禁发现。
+- `audit_docx_structure.py` 新增 DOCX 内半角标点 issue、页码字段审计、页眉页脚引用审计、style `basedOn` 与 `docDefaults` 继承解析。
+- 文本审计与聚合门禁默认不输出原文摘录；需要调试时显式使用 `--with-excerpt`。
+- DOCX/ZIP/PNG 读取增加基础大小、条目数、解压体积、压缩比和流式哈希保护；LibreOffice/Poppler 渲染增加脚本级超时。
+
+### 验证
+
+- 当前 V2 本地验证：`65 passed`。
+- 发布 smoke gate 继续覆盖模板应用、模板一致性、DOCX -> PDF -> PNG 渲染、并行 LibreOffice 渲染和格式门禁。
+
 ## 2.0.1 - 2026-05-29
 
 ### 新增

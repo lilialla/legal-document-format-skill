@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
+import tempfile
 import zipfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -17,7 +19,12 @@ from xml.etree import ElementTree
 WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 XML_NS = "http://www.w3.org/XML/1998/namespace"
 TEXT_TAGS = {f"{{{WORD_NS}}}t"}
+PARAGRAPH_TAG = f"{{{WORD_NS}}}p"
 PLACEHOLDER_RE = re.compile(r"\{\{\s*([A-Za-z0-9_.-]+)\s*\}\}")
+MAX_DOCX_BYTES = 100 * 1024 * 1024
+MAX_ZIP_ENTRIES = 2000
+MAX_UNCOMPRESSED_BYTES = 250 * 1024 * 1024
+MAX_COMPRESSION_RATIO = 100
 
 ElementTree.register_namespace("w", WORD_NS)
 
@@ -107,11 +114,115 @@ def replace_text_node(text: str, replacements: dict[str, str]) -> tuple[str, dic
     return PLACEHOLDER_RE.sub(replace_match, text), hits
 
 
+def has_unsafe_zip_name(name: str) -> bool:
+    return (
+        name.startswith("/")
+        or name.startswith("\\")
+        or "\\" in name
+        or any(part == ".." for part in Path(name).parts)
+        or any(ord(char) < 32 for char in name)
+    )
+
+
+def validate_docx_package(path: Path) -> list[dict[str, Any]]:
+    issues: list[dict[str, Any]] = []
+    try:
+        if path.stat().st_size > MAX_DOCX_BYTES:
+            issues.append(
+                issue(
+                    "docx_too_large",
+                    "error",
+                    f"DOCX is larger than the limit of {MAX_DOCX_BYTES} bytes: {path}",
+                )
+            )
+            return issues
+        with zipfile.ZipFile(path) as docx:
+            infos = docx.infolist()
+    except zipfile.BadZipFile:
+        return [issue("template_not_docx", "error", "Template is not a readable DOCX zip package.")]
+    except OSError as exc:
+        return [issue("template_read_error", "error", f"Could not read template: {exc}")]
+
+    if len(infos) > MAX_ZIP_ENTRIES:
+        issues.append(
+            issue(
+                "zip_entry_limit",
+                "error",
+                f"DOCX has too many package entries: {len(infos)} > {MAX_ZIP_ENTRIES}",
+            )
+        )
+    total_uncompressed = 0
+    for info in infos:
+        total_uncompressed += info.file_size
+        if has_unsafe_zip_name(info.filename):
+            issues.append(
+                issue(
+                    "unsafe_zip_entry_name",
+                    "error",
+                    f"DOCX contains an unsafe package entry name: {info.filename}",
+                    part=info.filename,
+                )
+            )
+        if info.compress_size and info.file_size / info.compress_size > MAX_COMPRESSION_RATIO:
+            issues.append(
+                issue(
+                    "zip_compression_ratio",
+                    "error",
+                    f"DOCX package entry compression ratio is too high: {info.filename}",
+                    part=info.filename,
+                )
+            )
+    if total_uncompressed > MAX_UNCOMPRESSED_BYTES:
+        issues.append(
+            issue(
+                "zip_uncompressed_limit",
+                "error",
+                f"DOCX uncompressed size is too large: {total_uncompressed} > {MAX_UNCOMPRESSED_BYTES}",
+            )
+        )
+    return issues
+
+
 def set_xml_space_if_needed(node: ElementTree.Element) -> None:
     text = node.text or ""
     xml_space = f"{{{XML_NS}}}space"
     if text[:1].isspace() or text[-1:].isspace():
         node.set(xml_space, "preserve")
+
+
+def replace_text_nodes_in_block(nodes: list[ElementTree.Element], replacements: dict[str, str]) -> tuple[bool, dict[str, int]]:
+    texts = [node.text or "" for node in nodes]
+    combined = "".join(texts)
+    if not combined:
+        return False, {}
+
+    owners: list[int] = []
+    for index, text in enumerate(texts):
+        owners.extend([index] * len(text))
+
+    matches = [match for match in PLACEHOLDER_RE.finditer(combined) if match.group(1) in replacements]
+    if not matches:
+        return False, {}
+
+    starts = {match.start(): match for match in matches}
+    output = [""] * len(nodes)
+    hit_counts: dict[str, int] = {}
+    position = 0
+    while position < len(combined):
+        match = starts.get(position)
+        if match is not None:
+            key = match.group(1)
+            output[owners[position]] += replacements[key]
+            hit_counts[key] = hit_counts.get(key, 0) + 1
+            position = match.end()
+            continue
+        output[owners[position]] += combined[position]
+        position += 1
+
+    for node, text in zip(nodes, output):
+        node.text = text
+        set_xml_space_if_needed(node)
+    return True, hit_counts
 
 
 def replace_xml_part(part_name: str, data: bytes, replacements: dict[str, str]) -> tuple[bytes, list[ReplacementHit], list[dict[str, Any]], bool]:
@@ -123,13 +234,11 @@ def replace_xml_part(part_name: str, data: bytes, replacements: dict[str, str]) 
 
     changed = False
     hit_counts: dict[str, int] = {}
-    for node in root.iter():
-        if node.tag not in TEXT_TAGS or node.text is None:
-            continue
-        replaced, hits = replace_text_node(node.text, replacements)
-        if replaced != node.text:
-            node.text = replaced
-            set_xml_space_if_needed(node)
+    text_blocks = list(root.iter(PARAGRAPH_TAG)) or [root]
+    for block in text_blocks:
+        text_nodes = [node for node in block.iter() if node.tag in TEXT_TAGS and node.text is not None]
+        block_changed, hits = replace_text_nodes_in_block(text_nodes, replacements)
+        if block_changed:
             changed = True
             for key, count in hits.items():
                 hit_counts[key] = hit_counts.get(key, 0) + count
@@ -172,6 +281,9 @@ def apply_template(template_path: Path, output_path: Path, replacements: dict[st
 
     if not template_path.exists():
         return {"summary": {"status": "fail"}, "issues": [issue("template_not_found", "error", f"Template not found: {template_path}")]}
+    package_issues = validate_docx_package(template_path)
+    if package_issues:
+        return {"summary": {"status": "fail"}, "issues": package_issues}
     if template_path.suffix.lower() != ".docx":
         issues.append(issue("template_extension", "warning", "Template path does not use a .docx extension."))
     if output_path.exists() and not force:
@@ -181,8 +293,11 @@ def apply_template(template_path: Path, output_path: Path, replacements: dict[st
     if not output_path.parent.exists():
         return {"summary": {"status": "fail"}, "issues": [issue("output_parent_missing", "error", f"Output directory does not exist: {output_path.parent}")]}
 
+    temp_output: Path | None = None
     try:
-        with zipfile.ZipFile(template_path) as source, zipfile.ZipFile(output_path, "w") as target:
+        with tempfile.NamedTemporaryFile(prefix=f".{output_path.name}.", suffix=".tmp", dir=output_path.parent, delete=False) as temp_file:
+            temp_output = Path(temp_file.name)
+        with zipfile.ZipFile(template_path) as source, zipfile.ZipFile(temp_output, "w") as target:
             for info in source.infolist():
                 data = source.read(info.filename)
                 if is_candidate_xml_part(info.filename):
@@ -193,8 +308,12 @@ def apply_template(template_path: Path, output_path: Path, replacements: dict[st
                         changed_parts.append(info.filename)
                 target.writestr(clone_zip_info(info), data)
     except zipfile.BadZipFile:
+        if temp_output is not None:
+            temp_output.unlink(missing_ok=True)
         return {"summary": {"status": "fail"}, "issues": [issue("template_not_docx", "error", "Template is not a readable DOCX zip package.")]}
     except OSError as exc:
+        if temp_output is not None:
+            temp_output.unlink(missing_ok=True)
         return {"summary": {"status": "fail"}, "issues": [issue("io_error", "error", f"Could not apply template: {exc}")]}
 
     hit_keys = {hit.key for hit in hits}
@@ -204,6 +323,11 @@ def apply_template(template_path: Path, output_path: Path, replacements: dict[st
     error_count = sum(1 for item in issues if item["severity"] == "error")
     warning_count = sum(1 for item in issues if item["severity"] == "warning")
     status = "fail" if error_count else "warning" if warning_count else "pass"
+    if status == "fail":
+        if temp_output is not None:
+            temp_output.unlink(missing_ok=True)
+    elif temp_output is not None:
+        os.replace(temp_output, output_path)
     return {
         "summary": {
             "status": status,

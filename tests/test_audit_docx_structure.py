@@ -92,6 +92,48 @@ STYLES_XML = """<?xml version="1.0" encoding="UTF-8"?>
 </w:styles>
 """
 
+STYLES_WITH_BASED_ON_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults>
+    <w:rPrDefault>
+      <w:rPr><w:rFonts w:eastAsia="SimSun" w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="24"/></w:rPr>
+    </w:rPrDefault>
+  </w:docDefaults>
+  <w:style w:type="paragraph" w:styleId="BaseTitle">
+    <w:name w:val="BaseTitle"/>
+    <w:rPr><w:sz w:val="32"/></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Title">
+    <w:name w:val="Title"/>
+    <w:basedOn w:val="BaseTitle"/>
+  </w:style>
+</w:styles>
+"""
+
+FOOTER_WITH_PAGE_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:p>
+    <w:r><w:fldChar w:fldCharType="begin"/></w:r>
+    <w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>
+    <w:r><w:fldChar w:fldCharType="end"/></w:r>
+  </w:p>
+</w:ftr>
+"""
+
+DOCUMENT_WITH_REFERENCES_XML = DOCUMENT_XML.replace(
+    "<w:sectPr/>",
+    '<w:sectPr><w:headerReference w:type="default" r:id="rId3" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/><w:footerReference w:type="default" r:id="rId4" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/></w:sectPr>',
+)
+
+DOCX_HALFWIDTH_PUNCTUATION_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p><w:r><w:t>申请人: 张三, 李四。</w:t></w:r></w:p>
+    <w:sectPr/>
+  </w:body>
+</w:document>
+"""
+
 
 def write_docx(path, parts):
     with zipfile.ZipFile(path, "w") as docx:
@@ -116,12 +158,12 @@ def test_audits_minimal_synthetic_docx_with_optional_parts(tmp_path):
         {
             "[Content_Types].xml": CONTENT_TYPES_XML,
             "_rels/.rels": PACKAGE_RELS_XML,
-            "word/document.xml": DOCUMENT_XML,
+            "word/document.xml": DOCUMENT_WITH_REFERENCES_XML,
             "word/_rels/document.xml.rels": EMPTY_DOCUMENT_RELS_XML,
             "word/styles.xml": "<w:styles xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"/>",
             "word/numbering.xml": "<w:numbering xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"/>",
             "word/header1.xml": "<w:hdr xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"/>",
-            "word/footer1.xml": "<w:ftr xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"/>",
+            "word/footer1.xml": FOOTER_WITH_PAGE_XML,
         },
     )
 
@@ -138,6 +180,8 @@ def test_audits_minimal_synthetic_docx_with_optional_parts(tmp_path):
     assert result["summary"]["has_footer_parts"] is True
     assert result["summary"]["has_styles"] is True
     assert result["summary"]["has_numbering"] is True
+    assert result["summary"]["page_field_count"] == 1
+    assert result["summary"]["section_footer_reference_count"] == 1
 
 
 def test_reports_missing_relationships_and_empty_document(tmp_path):
@@ -210,6 +254,29 @@ def test_reports_title_and_punctuation_format_summary(tmp_path):
     assert result["summary"]["punctuation_font_signature_count"] == 1
 
 
+def test_resolves_title_style_based_on_and_doc_defaults(tmp_path):
+    docx_path = tmp_path / "based-on.docx"
+    write_docx(
+        docx_path,
+        {
+            "[Content_Types].xml": CONTENT_TYPES_XML,
+            "_rels/.rels": PACKAGE_RELS_XML,
+            "word/document.xml": FORMATTED_DOCUMENT_XML,
+            "word/_rels/document.xml.rels": EMPTY_DOCUMENT_RELS_XML,
+            "word/styles.xml": STYLES_WITH_BASED_ON_XML,
+        },
+    )
+
+    completed = run_cli(str(docx_path), "--json")
+
+    assert completed.returncode == 0, completed.stderr
+    result = json.loads(completed.stdout)
+    codes = {issue["code"] for issue in result["issues"]}
+    assert "title_font_missing" not in codes
+    assert "title_size_missing" not in codes
+    assert result["summary"]["title_size_count"] == 1
+
+
 def test_reports_mixed_title_and_punctuation_fonts(tmp_path):
     docx_path = tmp_path / "mixed-format.docx"
     write_docx(
@@ -233,6 +300,48 @@ def test_reports_mixed_title_and_punctuation_fonts(tmp_path):
     assert "punctuation_font_missing_east_asia" in codes
     assert "punctuation_font_mixed" in codes
     assert result["summary"]["punctuation_missing_east_asia_count"] >= 1
+
+
+def test_reports_docx_halfwidth_punctuation_issue(tmp_path):
+    docx_path = tmp_path / "halfwidth.docx"
+    write_docx(
+        docx_path,
+        {
+            "[Content_Types].xml": CONTENT_TYPES_XML,
+            "_rels/.rels": PACKAGE_RELS_XML,
+            "word/document.xml": DOCX_HALFWIDTH_PUNCTUATION_XML,
+            "word/_rels/document.xml.rels": EMPTY_DOCUMENT_RELS_XML,
+            "word/styles.xml": STYLES_XML,
+        },
+    )
+
+    completed = run_cli(str(docx_path), "--json")
+
+    assert completed.returncode == 0
+    result = json.loads(completed.stdout)
+    assert any(issue["code"] == "halfwidth_punctuation_cn" for issue in result["issues"])
+    assert result["summary"]["halfwidth_punctuation_run_count"] >= 1
+
+
+def test_reports_footer_without_page_field(tmp_path):
+    docx_path = tmp_path / "missing-page-field.docx"
+    write_docx(
+        docx_path,
+        {
+            "[Content_Types].xml": CONTENT_TYPES_XML,
+            "_rels/.rels": PACKAGE_RELS_XML,
+            "word/document.xml": DOCUMENT_WITH_REFERENCES_XML,
+            "word/_rels/document.xml.rels": EMPTY_DOCUMENT_RELS_XML,
+            "word/footer1.xml": "<w:ftr xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"/>",
+        },
+    )
+
+    completed = run_cli(str(docx_path), "--json")
+
+    assert completed.returncode == 0
+    result = json.loads(completed.stdout)
+    assert any(issue["code"] == "page_field_missing" for issue in result["issues"])
+    assert result["summary"]["page_field_count"] == 0
 
 
 def test_human_report_and_help_are_available(tmp_path):

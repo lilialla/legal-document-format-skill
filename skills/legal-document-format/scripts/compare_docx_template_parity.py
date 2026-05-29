@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import sys
 import zipfile
 from pathlib import Path
 from typing import Any
@@ -16,9 +15,12 @@ from xml.etree import ElementTree
 WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 TEXT_TAGS = {
     f"{{{WORD_NS}}}t",
-    f"{{{WORD_NS}}}instrText",
     f"{{{WORD_NS}}}delText",
 }
+MAX_DOCX_BYTES = 100 * 1024 * 1024
+MAX_ZIP_ENTRIES = 2000
+MAX_UNCOMPRESSED_BYTES = 250 * 1024 * 1024
+MAX_COMPRESSION_RATIO = 100
 
 ElementTree.register_namespace("w", WORD_NS)
 
@@ -48,6 +50,42 @@ def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def has_unsafe_zip_name(name: str) -> bool:
+    return (
+        name.startswith("/")
+        or name.startswith("\\")
+        or "\\" in name
+        or any(part == ".." for part in Path(name).parts)
+        or any(ord(char) < 32 for char in name)
+    )
+
+
+def validate_docx_package(path: Path, label: str) -> list[dict[str, Any]]:
+    issues: list[dict[str, Any]] = []
+    try:
+        if path.stat().st_size > MAX_DOCX_BYTES:
+            return [issue(f"{label}_too_large", "error", f"{label} DOCX exceeds {MAX_DOCX_BYTES} bytes.")]
+        with zipfile.ZipFile(path) as docx:
+            infos = docx.infolist()
+    except zipfile.BadZipFile:
+        return [issue(f"{label}_bad_zip", "error", f"{label} is not a readable DOCX zip package.")]
+    except OSError as exc:
+        return [issue(f"{label}_read_error", "error", f"Could not read {label}: {exc}")]
+
+    if len(infos) > MAX_ZIP_ENTRIES:
+        issues.append(issue(f"{label}_entry_limit", "error", f"{label} has too many package entries: {len(infos)}."))
+    total_uncompressed = 0
+    for info in infos:
+        total_uncompressed += info.file_size
+        if has_unsafe_zip_name(info.filename):
+            issues.append(issue(f"{label}_unsafe_entry", "error", f"{label} has unsafe package entry: {info.filename}", part=info.filename))
+        if info.compress_size and info.file_size / info.compress_size > MAX_COMPRESSION_RATIO:
+            issues.append(issue(f"{label}_compression_ratio", "error", f"{label} package entry compression ratio is too high: {info.filename}", part=info.filename))
+    if total_uncompressed > MAX_UNCOMPRESSED_BYTES:
+        issues.append(issue(f"{label}_uncompressed_limit", "error", f"{label} uncompressed size exceeds {MAX_UNCOMPRESSED_BYTES} bytes."))
+    return issues
+
+
 def strip_whitespace(node: ElementTree.Element) -> None:
     if node.text is not None and node.text.strip() == "":
         node.text = None
@@ -75,6 +113,10 @@ def compare_docx(template_path: Path, candidate_path: Path) -> dict[str, Any]:
         issues.append(issue("template_not_found", "error", f"Template not found: {template_path}"))
     if not candidate_path.exists():
         issues.append(issue("candidate_not_found", "error", f"Candidate not found: {candidate_path}"))
+    if issues:
+        return build_report(template_path, candidate_path, issues, 0, 0, 0)
+    issues.extend(validate_docx_package(template_path, "template"))
+    issues.extend(validate_docx_package(candidate_path, "candidate"))
     if issues:
         return build_report(template_path, candidate_path, issues, 0, 0, 0)
 

@@ -117,6 +117,22 @@ def write_template(path: Path, styles_xml: str = STYLES_XML) -> None:
         docx.writestr("word/numbering.xml", '<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>')
 
 
+def write_split_placeholder_template(path: Path) -> None:
+    split_document_xml = DOCUMENT_XML.replace(
+        "<w:r><w:t>{{TITLE}}</w:t></w:r>",
+        "<w:r><w:t>{{TI</w:t></w:r><w:r><w:t>TLE}}</w:t></w:r>",
+    )
+    with zipfile.ZipFile(path, "w") as docx:
+        docx.writestr("[Content_Types].xml", CONTENT_TYPES_XML)
+        docx.writestr("_rels/.rels", PACKAGE_RELS_XML)
+        docx.writestr("word/document.xml", split_document_xml)
+        docx.writestr("word/_rels/document.xml.rels", DOCUMENT_RELS_XML)
+        docx.writestr("word/header1.xml", HEADER_XML)
+        docx.writestr("word/footer1.xml", FOOTER_XML)
+        docx.writestr("word/styles.xml", STYLES_XML)
+        docx.writestr("word/numbering.xml", '<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>')
+
+
 def run_apply(*args: str):
     return subprocess.run([sys.executable, str(APPLY_SCRIPT), *args], check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -174,7 +190,39 @@ def test_apply_reports_unresolved_placeholder(tmp_path: Path):
     assert result.returncode == 1
     report = json.loads(result.stdout)
     assert report["summary"]["status"] == "fail"
+    assert not output.exists()
     assert any(issue["code"] == "unresolved_placeholder" for issue in report["issues"])
+
+
+def test_apply_replaces_placeholder_split_across_runs(tmp_path: Path):
+    template = tmp_path / "split-template.docx"
+    output = tmp_path / "output.docx"
+    write_split_placeholder_template(template)
+
+    result = run_apply(
+        str(template),
+        str(output),
+        "--set",
+        "TITLE=裁决书",
+        "--set",
+        "CASE_NO=SYN-2026-0001",
+        "--set",
+        "CLAIMANT=甲方贸易有限公司",
+        "--set",
+        "RESPONDENT=乙方设备有限公司",
+        "--set",
+        "HEADER_TEXT=仲裁委员会",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stdout
+    report = json.loads(result.stdout)
+    assert report["summary"]["status"] == "pass"
+    with zipfile.ZipFile(output) as docx:
+        document_xml = docx.read("word/document.xml").decode("utf-8")
+        assert "裁决书" in document_xml
+        assert "{{TI" not in document_xml
+        assert "TLE}}" not in document_xml
 
 
 def test_parity_detects_style_delta(tmp_path: Path):
@@ -189,6 +237,27 @@ def test_parity_detects_style_delta(tmp_path: Path):
     report = json.loads(result.stdout)
     assert report["summary"]["status"] == "fail"
     assert any(issue["code"] == "xml_structure_delta" and issue["part"] == "word/styles.xml" for issue in report["issues"])
+
+
+def test_parity_detects_page_field_delta(tmp_path: Path):
+    template = tmp_path / "template.docx"
+    candidate = tmp_path / "candidate.docx"
+    write_template(template)
+    with zipfile.ZipFile(candidate, "w") as docx:
+        docx.writestr("[Content_Types].xml", CONTENT_TYPES_XML)
+        docx.writestr("_rels/.rels", PACKAGE_RELS_XML)
+        docx.writestr("word/document.xml", DOCUMENT_XML)
+        docx.writestr("word/_rels/document.xml.rels", DOCUMENT_RELS_XML)
+        docx.writestr("word/header1.xml", HEADER_XML)
+        docx.writestr("word/footer1.xml", FOOTER_XML.replace(" PAGE ", " NUMPAGES "))
+        docx.writestr("word/styles.xml", STYLES_XML)
+        docx.writestr("word/numbering.xml", '<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>')
+
+    result = run_parity(str(template), str(candidate), "--json")
+
+    assert result.returncode == 1
+    report = json.loads(result.stdout)
+    assert any(issue["code"] == "xml_structure_delta" and issue["part"] == "word/footer1.xml" for issue in report["issues"])
 
 
 def test_help_and_executable_bits():

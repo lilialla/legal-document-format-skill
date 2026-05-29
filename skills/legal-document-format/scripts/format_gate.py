@@ -71,7 +71,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--no-excerpt",
         action="store_true",
-        help="Omit source text excerpts from aggregate JSON and human-readable output.",
+        help="Omit source text excerpts from aggregate JSON and human-readable output. This is the default.",
+    )
+    parser.add_argument(
+        "--with-excerpt",
+        action="store_true",
+        help="Include source text excerpts. Use only for non-sensitive debugging.",
     )
     return parser
 
@@ -184,10 +189,11 @@ def run_png_check(baseline_dir: str, candidate_dir: str) -> dict[str, Any]:
 
 def build_report(args: argparse.Namespace) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
+    no_excerpt = args.no_excerpt or not args.with_excerpt
     if args.text is not None:
-        checks.append(run_text_check(args.text, no_excerpt=args.no_excerpt))
+        checks.append(run_text_check(args.text, no_excerpt=no_excerpt))
     if args.text_file is not None:
-        checks.append(run_text_check(args.text_file, no_excerpt=args.no_excerpt, require_file=True))
+        checks.append(run_text_check(args.text_file, no_excerpt=no_excerpt, require_file=True))
     if args.docx is not None:
         checks.append(run_docx_check(args.docx))
     if args.baseline_png is not None and args.candidate_png is not None:
@@ -284,7 +290,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
     else:
-        print(format_human_report(report, no_excerpt=args.no_excerpt))
+        print(format_human_report(report, no_excerpt=args.no_excerpt or not args.with_excerpt))
 
     if report["summary"]["error_count"]:
         return 1

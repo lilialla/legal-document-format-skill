@@ -119,6 +119,15 @@ def test_text_warning_returns_zero_and_aggregates_json():
     assert payload["summary"]["warning_count"] >= 1
     assert payload["checks"][0]["name"] == "text"
     assert any(issue["check"] == "text" and issue["code"] == "HALFWIDTH_COLON_CN" for issue in payload["issues"])
+    assert all("excerpt" not in issue for issue in payload["issues"])
+
+
+def test_with_excerpt_includes_sensitive_text_only_when_requested():
+    result = run_cli("--text", "申请人: 张三", "--json", "--with-excerpt")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert any(issue.get("excerpt") == "申请人: 张三" for issue in payload["issues"])
 
 
 def test_fail_on_warning_returns_one_for_text_warning():
@@ -282,3 +291,4 @@ def test_help_and_executable_bit():
     assert "--baseline-png" in result.stdout
     assert "--require-visual" in result.stdout
     assert "--fail-on-warning" in result.stdout
+    assert "--with-excerpt" in result.stdout

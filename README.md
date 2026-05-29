@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img alt="发布状态" src="https://img.shields.io/badge/状态-v2.0.1%20格式细节增强版-blue">
+  <img alt="发布状态" src="https://img.shields.io/badge/状态-v2.1.0%20审计修复版-blue">
   <img alt="适用对象" src="https://img.shields.io/badge/适用对象-律师%20%2F%20法务%20%2F%20法律助理-7aa2a7">
   <img alt="文书格式" src="https://img.shields.io/badge/格式-DOCX%20%2F%20PDF%20%2F%20PNG-8aa0b2">
   <img alt="许可证" src="https://img.shields.io/badge/许可证-MIT-green">
@@ -189,7 +189,7 @@
 
 ### 为什么占位符不要拆开设置格式？
 
-Word 有时会把一个词拆成多个小片段。如果 `{{CASE_NO}}` 中间被拆开，工具可能无法稳定识别。最稳妥的做法是把一个占位符作为连续文本输入。
+Word 有时会把一个词拆成多个小片段。当前工具可以处理同一段落内被拆开的 `{{CASE_NO}}`，但最稳妥的做法仍然是把一个占位符作为连续文本输入，不要拆到不同段落或表格单元格。
 
 ### 能不能做到完全一模一样？
 
@@ -215,11 +215,11 @@ Word 有时会把一个词拆成多个小片段。如果 `{{CASE_NO}}` 中间被
 
 | 项目 | 说明 |
 |---|---|
-| 当前版本 | `v2.0.1 格式细节增强版` |
+| 当前版本 | `v2.1.0 审计修复版` |
 | 核心语言 | Python 3.9+ |
 | 主要文件格式 | DOCX、PDF、PNG、JSON |
 | 发布版强制工具 | LibreOffice、Poppler |
-| 当前验证结果 | `57 passed`，V2 release smoke 共 10 步通过 |
+| 当前验证结果 | `65 passed`，V2 release smoke 共 10 步通过 |
 | 安全策略 | synthetic 示例；不提交真实案件或私有模板 |
 
 ### 核心命令
@@ -314,11 +314,12 @@ legal-document-format-skill/
 
 ### V2 的技术边界
 
-- 默认只替换 Word 文本节点中的 `{{KEY}}` 占位符。
-- 模板一致性检查会忽略 `w:t`、`w:instrText`、`w:delText` 的文本内容差异，但会比较 XML 结构、关系、样式、编号、页眉页脚、分节和非文本部件。
+- 支持替换位于同一段落内、被多个 Word run/text 节点拆开的 `{{KEY}}` 占位符。
+- 模板一致性检查会忽略正文文本节点差异，但会比较字段指令、XML 结构、关系、样式、编号、页眉页脚、分节和非文本部件。
 - 不默认支持无占位符文档的语义猜测替换。
-- 不默认合并跨 run 的占位符。
+- 不默认合并跨段落、跨表格单元格或跨复杂块的占位符。
 - 不内置第三方像素级 PDF diff；可后续接入 `diff-pdf`、`diff-pdf-visually` 或同类工具。
+- 文本审计和聚合门禁默认不输出原文摘录，需要调试时显式使用 `--with-excerpt`。
 
 ### 本地验证
 
@@ -333,7 +334,7 @@ python3 -m pytest
 当前验证结果：
 
 ```text
-57 passed
+65 passed
 V2 Release Smoke Gate: 10 steps, 0 failures
 ```
 

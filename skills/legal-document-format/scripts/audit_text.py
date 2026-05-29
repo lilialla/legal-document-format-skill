@@ -244,7 +244,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--no-excerpt",
         action="store_true",
-        help="omit source text excerpts from the report for sensitive documents",
+        help="omit source text excerpts from the report. This is the default for legal documents.",
+    )
+    parser.add_argument(
+        "--with-excerpt",
+        action="store_true",
+        help="include source text excerpts in reports. Use only for non-sensitive debugging.",
     )
     parser.add_argument(
         "--fail-on-issue",
@@ -263,6 +268,7 @@ def main(argv: list[str] | None = None) -> int:
     except FileNotFoundError as exc:
         parser.error(str(exc))
     issues = audit_text(text)
+    omit_excerpt = args.no_excerpt or not args.with_excerpt
     output_issues = [
         Issue(
             code=issue.code,
@@ -270,7 +276,7 @@ def main(argv: list[str] | None = None) -> int:
             line=issue.line,
             severity=issue.severity,
             column=issue.column,
-            excerpt="" if args.no_excerpt else issue.excerpt,
+            excerpt="" if omit_excerpt else issue.excerpt,
         )
         for issue in issues
     ]

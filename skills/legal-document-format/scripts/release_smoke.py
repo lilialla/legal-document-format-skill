@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import subprocess
 import sys
@@ -105,11 +106,14 @@ def run_parallel_render_step(docx_path: Path, output_root: Path, worker_count: i
                 returncode=127,
                 detail=f"could not start parallel render: {exc}",
             )
-    outputs = []
+    def communicate(process: subprocess.Popen[str]) -> str:
+        return process.communicate(timeout=PARALLEL_RENDER_TIMEOUT_SECONDS)[0]
+
     try:
-        for process in processes:
-            outputs.append(process.communicate(timeout=PARALLEL_RENDER_TIMEOUT_SECONDS)[0])
-    except subprocess.TimeoutExpired:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(processes)) as executor:
+            futures = [executor.submit(communicate, process) for process in processes]
+            outputs = [future.result(timeout=PARALLEL_RENDER_TIMEOUT_SECONDS + 5) for future in futures]
+    except (subprocess.TimeoutExpired, concurrent.futures.TimeoutError):
         for process in processes:
             process.kill()
         outputs = [process.communicate()[0] for process in processes]

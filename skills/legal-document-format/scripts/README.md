@@ -28,7 +28,7 @@
 ./skills/legal-document-format/scripts/audit_text.py "申请人: 张三" --json
 ```
 
-当输入必须是文件路径时使用 `--file`；处理敏感文本时使用 `--no-excerpt`；需要严格门禁时使用 `--fail-on-issue`。
+当输入必须是文件路径时使用 `--file`；默认不输出原文摘录，需要调试非敏感文本时使用 `--with-excerpt`；需要严格门禁时使用 `--fail-on-issue`。
 
 ## `audit_docx_structure.py`
 
@@ -40,7 +40,7 @@
 
 ## `apply_docx_template.py`
 
-从用户提供的 DOCX 模板复制完整包结构，只替换模板中已有的 `{{KEY}}` 文本占位符。页眉、页脚、分节、样式、编号、页码字段和媒体均继承自模板。
+从用户提供的 DOCX 模板复制完整包结构，只替换模板中已有的 `{{KEY}}` 文本占位符。支持同一段落内跨 run/text 节点的占位符；页眉、页脚、分节、样式、编号、页码字段和媒体均继承自模板。
 
 ```bash
 ./skills/legal-document-format/scripts/apply_docx_template.py \
@@ -53,7 +53,7 @@
 
 ## `compare_docx_template_parity.py`
 
-检查生成文件是否保持模板的 OpenXML 布局结构。该门禁忽略 `w:t`、`w:instrText`、`w:delText` 的文本内容差异，但要求结构、样式、页眉页脚、分节、编号、关系和非文本部件一致。
+检查生成文件是否保持模板的 OpenXML 布局结构。该门禁忽略正文文本节点内容差异，但不忽略 `w:instrText` 字段指令，要求结构、样式、页眉页脚、页码字段、分节、编号、关系和非文本部件一致。
 
 ```bash
 ./skills/legal-document-format/scripts/compare_docx_template_parity.py \
@@ -69,6 +69,8 @@
 ./skills/legal-document-format/scripts/compare_rendered_pages.py baseline/png candidate/png --json
 ```
 
+发布门禁中可加入 `--fail-on-warning`，将 PNG 大小或内容哈希差异升级为阻断。
+
 ## `format_gate.py`
 
 将文本、DOCX 结构和渲染页检查聚合成一个本地报告。
@@ -81,10 +83,10 @@
   --candidate-png candidate/png \
   --require-visual \
   --fail-on-warning \
-  --json --no-excerpt
+  --json
 ```
 
-当文本输入必须来自文件时使用 `--text-file path/to/input.txt`。
+当文本输入必须来自文件时使用 `--text-file path/to/input.txt`。默认不输出原文摘录，需要调试非敏感文本时使用 `--with-excerpt`。
 发布档门禁应使用 `--require-visual`，缺少渲染页输入时直接报错。
 发布前严格门禁可同时使用 `--fail-on-warning`。
 
