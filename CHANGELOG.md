@@ -28,7 +28,7 @@
 
 ### 验证
 
-- 当前 V2 本地验证：`57 passed`。
+- 该版本发布时验证：`57 passed`。
 - 发布 smoke gate 继续覆盖模板应用、模板一致性、DOCX -> PDF -> PNG 渲染、并行 LibreOffice 渲染和格式门禁。
 
 ## 2.0.0 - 2026-05-29
@@ -42,7 +42,7 @@
 
 ### 验证
 
-- 当前 V2 本地验证：`55 passed`。
+- 该版本发布时验证：`55 passed`。
 - 发布 smoke gate 已覆盖 DOCX 模板生成、占位符替换、OpenXML 模板一致性、DOCX -> PDF -> PNG 渲染、并行 LibreOffice 渲染和格式门禁。
 
 ### 边界
@@ -65,7 +65,7 @@
 
 ### 验证
 
-- 当前 V1 本地验证：`51 passed`。
+- 该版本发布时验证：`51 passed`。
 - 发布 smoke gate 已覆盖 DOCX -> PDF -> PNG 渲染链路。
 
 ### 边界
