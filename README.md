@@ -1,174 +1,170 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="Legal Document Format Skill logo" width="132">
+  <img src="assets/logo.svg" alt="文格 Logo" width="132">
 </p>
 
-<h1 align="center">Legal Document Format Skill</h1>
+<h1 align="center">文格：法律文书格式门禁 Skill</h1>
 
 <p align="center">
-  <strong>DOCX template preservation, content lock, render validation, and reviewable format gates for AI legal workflows.</strong>
-</p>
-
-<p align="center">
-  <a href="#quickstart">Quickstart</a>
-  · <a href="#capability-matrix">Capabilities</a>
-  · <a href="#agent-and-plugin-strategy">Agent Strategy</a>
-  · <a href="#script-reference">Scripts</a>
-  · <a href="#privacy-and-safety">Privacy</a>
+  <strong>面向 AI 法律工作流的 DOCX 模板继承、内容锁定、渲染校验与可审阅格式门禁。</strong>
 </p>
 
 <p align="center">
-  <img alt="Status" src="https://img.shields.io/badge/status-v0.1%20technical%20preview-blue">
-  <img alt="Python" src="https://img.shields.io/badge/python-3.9%2B-blue">
-  <img alt="Runtime" src="https://img.shields.io/badge/runtime-standard%20library-green">
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="Examples" src="https://img.shields.io/badge/examples-synthetic%20only-orange">
+  <a href="#快速开始">快速开始</a>
+  · <a href="#能力矩阵">能力矩阵</a>
+  · <a href="#agent-与插件策略">Agent 与插件策略</a>
+  · <a href="#脚本说明">脚本说明</a>
+  · <a href="#隐私与安全">隐私与安全</a>
 </p>
 
-Most AI legal workflows stop after drafting text. This project focuses on the last mile: preserving DOCX templates, locking legal content during formatting, rendering with LibreOffice, and producing a reviewable format report before delivery.
+<p align="center">
+  <img alt="发布状态" src="https://img.shields.io/badge/状态-v0.1%20技术预览-blue">
+  <img alt="Python 版本" src="https://img.shields.io/badge/Python-3.9%2B-blue">
+  <img alt="运行时依赖" src="https://img.shields.io/badge/核心运行时-标准库-green">
+  <img alt="许可证" src="https://img.shields.io/badge/许可证-MIT-green">
+  <img alt="示例数据" src="https://img.shields.io/badge/示例-synthetic%20only-orange">
+</p>
 
-This is a synthetic-first Agent Skill for Chinese legal documents, arbitration-award-style formal documents, template-based DOCX finalization, and local quality gates.
+大多数 AI 法律工作流止步于“写出文字”。但法律文书真正的交付难点往往在最后一公里：**继承 Word 母版、锁定实体内容、避免格式阶段污染法律事实，并在交付前生成可审阅的格式报告**。
 
-## At A Glance
+本项目是一个 synthetic-first 的 Agent Skill，面向中文法律文书、仲裁裁决书风格文书、模板化 DOCX 定稿，以及本地格式质量门禁。
 
-| | |
+## 一眼看懂
+
+| 项目 | 说明 |
 |---|---|
-| Release | `v0.1 Technical Preview` |
-| Runtime | Python 3.9+ standard library for core audit scripts |
-| Render tools | LibreOffice + Poppler for DOCX -> PDF -> PNG checks |
-| Primary outputs | JSON reports, human-readable gate reports, rendered PDF/PNG artifacts |
-| Safety posture | Synthetic examples only; no real cases, clients, or private templates |
-| Best fit | Local trial, Agent Skill packaging, legal-document formatting QA, public review |
+| 发布状态 | `v0.1 技术预览版` |
+| 核心运行时 | Python 3.9+，核心审计脚本仅使用标准库 |
+| 渲染工具 | LibreOffice + Poppler，用于 DOCX -> PDF -> PNG |
+| 主要输出 | JSON 报告、人类可读门禁报告、PDF/PNG 渲染产物 |
+| 安全策略 | 仅使用 synthetic 示例；不包含真实案件、客户信息或私有模板 |
+| 适合场景 | 本地试用、Agent Skill 打包、法律文书格式 QA、公开评审 |
 
-## Release Status
+## 发布状态
 
-`v0.1 Technical Preview`
+`v0.1 技术预览版`
 
-This repository is ready for local trial, skill packaging experiments, and public review. It is not marketed as a complete legal delivery system, and it does not replace lawyer review.
+当前版本已经适合本地试用、Skill 打包实验和公开展示。它不是完整的法律交付系统，也不替代律师审阅。
 
-## Topics
+## 推荐 Topics
 
-Recommended GitHub topics:
+GitHub 仓库建议使用以下 topics。本仓库已设置：
 
 ```text
 legaltech agent-skill docx openxml libreoffice poppler legal-documents
 document-automation visual-validation quality-gate python synthetic-data
 ```
 
-## What It Provides
+## 它能做什么
 
-- Progressive-disclosure routing for text cleanup, ordinary DOCX formatting, exact-template formatting, arbitration-award formatting, and visual validation.
-- Content lock rules: formatting should not silently change parties, dates, amounts, law citations, claims, findings, reasoning, dispositive text, signatures, or annex lists.
-- Exact-template guidance: when fidelity matters, start from the supplied base DOCX instead of recreating a blank document that merely looks similar.
-- Local quality gates for text, DOCX OpenXML structure, rendered PNG pages, and aggregate reports.
-- Synthetic DOCX fixture generation for smoke tests and demos without exposing real matters.
+- 按任务复杂度分层加载规则：文本清理、普通 DOCX 排版、精确模板套版、裁决书风格定稿、视觉校验。
+- 在格式阶段执行内容锁定：不静默改动当事人、日期、金额、法条、请求、认定、理由、主文、签名和附件清单。
+- 强调精确模板继承：需要高度一致时，应从用户提供的 DOCX 母版出发，而不是从空白文档“仿一个差不多的”。
+- 提供本地质量门禁：文本审计、DOCX OpenXML 结构审计、渲染页比较、聚合门禁报告。
+- 提供 synthetic DOCX 生成器，方便演示和 smoke test，不暴露真实材料。
 
-## What It Does Not Provide
+## 它不做什么
 
-- Legal advice.
-- Court-ready or arbitration-ready documents without human review.
-- Real case files, private arbitration templates, client facts, institution-specific rules, or confidential examples.
-- Pixel-level visual diff. The current PNG comparison is a metadata gate; stronger visual diff can be added later.
-- A hosted service or remote processing path. The current tools are local-first.
+- 不提供法律意见。
+- 不承诺自动生成可提交法院或仲裁机构的正式文件。
+- 不包含真实案件、私有仲裁模板、客户事实、机构特定规则或保密示例。
+- 不提供像素级视觉 diff。当前 PNG 比较是轻量元数据门禁，像素级 diff 可作为后续增强。
+- 不提供托管服务或远程处理路径。当前工具以本地执行为主。
 
-## Capability Matrix
+## 能力矩阵
 
-| Capability | Script | Required tools | Status |
+| 能力 | 脚本 | 依赖 | 状态 |
 |---|---|---|---|
-| Text and punctuation audit | `audit_text.py` | Python 3.9+ | Ready |
-| DOCX OpenXML structure audit | `audit_docx_structure.py` | Python 3.9+ | Ready |
-| DOCX to PDF to PNG render | `render_docx.sh` | LibreOffice + Poppler | Ready |
-| Rendered PNG page comparison | `compare_rendered_pages.py` | Python 3.9+ | Ready |
-| Aggregate format gate | `format_gate.py` | Python 3.9+; render inputs optional | Ready |
-| Synthetic DOCX generation | `make_synthetic_docx.py` | Python 3.9+ | Ready |
+| 文本与标点审计 | `audit_text.py` | Python 3.9+ | 可用 |
+| DOCX OpenXML 结构审计 | `audit_docx_structure.py` | Python 3.9+ | 可用 |
+| DOCX -> PDF -> PNG 渲染 | `render_docx.sh` | LibreOffice + Poppler | 可用 |
+| PNG 渲染页比较 | `compare_rendered_pages.py` | Python 3.9+ | 可用 |
+| 聚合格式门禁 | `format_gate.py` | Python 3.9+；渲染输入可选 | 可用 |
+| synthetic DOCX 生成 | `make_synthetic_docx.py` | Python 3.9+ | 可用 |
 
-## Prerequisites
+## 环境要求
 
-Core audit scripts use only the Python standard library at runtime:
+核心审计脚本运行时只依赖 Python 标准库：
 
 ```bash
 python --version  # 3.9+
 ```
 
-Render validation requires local document tools:
+渲染校验需要本地文档工具：
 
 ```bash
 soffice --version   # LibreOffice
 pdftoppm -h         # Poppler
 ```
 
-On macOS, LibreOffice is also detected at:
+在 macOS 上，脚本也会检测：
 
 ```text
 /Applications/LibreOffice.app/Contents/MacOS/soffice
 ```
 
-For development tests:
+开发测试依赖：
 
 ```bash
 python -m pip install -e ".[test]"
 ```
 
-## Agent And Plugin Strategy
+## Agent 与插件策略
 
-The skill is designed to degrade by capability instead of forcing every user into a heavy setup:
+后续分发不应强制所有用户安装重型依赖。本项目按能力分层降级：
 
-| Layer | Required for users | Notes |
+| 层级 | 用户必须安装 | 说明 |
 |---|---|---|
-| Core CLI audits | Python 3.9+ | No external runtime package dependency. |
-| Render validation | LibreOffice + Poppler | Required only when users want DOCX -> PDF -> PNG checks. |
-| Agent skill use | Codex, Claude Code, or a compatible skill runner | Optional; scripts can run directly without an agent. |
-| Future pixel diff | Optional visual diff tooling | Not included in v0.1. |
+| 核心 CLI 审计 | Python 3.9+ | 无额外运行时包依赖。 |
+| 渲染校验 | LibreOffice + Poppler | 仅当用户需要 DOCX -> PDF -> PNG 时必需。 |
+| Agent Skill 使用 | Codex、Claude Code 或兼容 Skill Runner | 可选；脚本可脱离 Agent 直接运行。 |
+| 未来像素级 diff | 可选视觉 diff 工具 | v0.1 暂未内置。 |
 
-For packaged distributions, declare LibreOffice and Poppler as required extras for render validation, not as mandatory dependencies for text/OpenXML audit use.
+打包分发时，建议默认安装或说明 `core` 能力；只有用户需要渲染校验时，才要求安装 LibreOffice 和 Poppler。
 
-## Distribution Profiles
+## 分发档位
 
-Use these profiles when packaging the project for different users:
-
-| Profile | Required components | Intended users |
+| 档位 | 组件 | 适合用户 |
 |---|---|---|
-| `core` | Python 3.9+, `audit_text.py`, `audit_docx_structure.py`, `format_gate.py` | Users who need text and DOCX structure gates without rendering. |
-| `render` | `core` + LibreOffice + Poppler + `render_docx.sh` + `compare_rendered_pages.py` | Users who need visual smoke checks and page-level review artifacts. |
-| `agent-skill` | `core` or `render` + `skills/legal-document-format/SKILL.md` | Codex, Claude Code, or compatible skill runners. |
-| `dev` | selected profile + `pytest` | Contributors and maintainers. |
+| `core` | Python 3.9+、`audit_text.py`、`audit_docx_structure.py`、`format_gate.py` | 只需要文本和 DOCX 结构门禁的用户。 |
+| `render` | `core` + LibreOffice + Poppler + `render_docx.sh` + `compare_rendered_pages.py` | 需要视觉 smoke check 和页面级产物的用户。 |
+| `agent-skill` | `core` 或 `render` + `skills/legal-document-format/SKILL.md` | Codex、Claude Code 或兼容 Skill Runner。 |
+| `dev` | 以上任一档位 + `pytest` | 贡献者和维护者。 |
 
-The default distribution should install or document the `core` profile first, then ask users to add the `render` profile only when they need document rendering.
+## 快速开始
 
-## Quickstart
-
-Clone the repository:
+克隆仓库：
 
 ```bash
 git clone https://github.com/lilialla/legal-document-format-skill.git
 cd legal-document-format-skill
 ```
 
-Generate a synthetic DOCX fixture:
+生成 synthetic DOCX：
 
 ```bash
 mkdir -p out
 ./skills/legal-document-format/scripts/make_synthetic_docx.py out/synthetic.docx
 ```
 
-Audit DOCX structure:
+审计 DOCX 结构：
 
 ```bash
 ./skills/legal-document-format/scripts/audit_docx_structure.py out/synthetic.docx --json
 ```
 
-Run a text audit without leaking excerpts:
+执行文本审计，并避免在日志中输出原文片段：
 
 ```bash
 ./skills/legal-document-format/scripts/audit_text.py "申请人: 张三" --json --no-excerpt
 ```
 
-Render the DOCX to PDF and PNG pages:
+将 DOCX 渲染为 PDF 和 PNG：
 
 ```bash
 ./skills/legal-document-format/scripts/render_docx.sh out/synthetic.docx out/rendered
 ```
 
-Run the aggregate format gate:
+运行聚合格式门禁：
 
 ```bash
 ./skills/legal-document-format/scripts/format_gate.py \
@@ -179,23 +175,25 @@ Run the aggregate format gate:
   --json --no-excerpt
 ```
 
-Expected result: the synthetic DOCX and PNG checks should pass; the sample text should produce a warning for the half-width colon.
+预期结果：synthetic DOCX 和 PNG 检查通过；示例文本会因为中文语境中的半角冒号产生一个 warning。
 
-## Script Reference
+## 脚本说明
 
-| Script | Purpose |
+| 脚本 | 用途 |
 |---|---|
-| `audit_text.py` | Audits Chinese legal text for punctuation and spacing issues. |
-| `audit_docx_structure.py` | Reads DOCX ZIP/OpenXML parts and reports sections, paragraphs, tables, headers, footers, styles, numbering, and malformed required parts. |
-| `render_docx.sh` | Uses LibreOffice headless and Poppler to render DOCX -> PDF -> PNG pages. |
-| `compare_rendered_pages.py` | Compares rendered PNG page directories by page count, filenames, PNG validity, dimensions, and size deltas. |
-| `format_gate.py` | Aggregates text, DOCX, and rendered-page checks into one JSON or human-readable report. |
-| `make_synthetic_docx.py` | Creates a synthetic DOCX fixture for demos and smoke tests. |
+| `audit_text.py` | 审计中文法律文本中的标点和空格问题。 |
+| `audit_docx_structure.py` | 读取 DOCX ZIP/OpenXML，报告 section、段落、表格、页眉页脚、样式、编号和损坏的关键 part。 |
+| `render_docx.sh` | 使用 LibreOffice headless 和 Poppler 执行 DOCX -> PDF -> PNG。 |
+| `compare_rendered_pages.py` | 比较 PNG 渲染页目录的页数、文件名、PNG 有效性、尺寸和文件大小差异。 |
+| `format_gate.py` | 将文本、DOCX 和渲染页检查聚合为一个 JSON 或人类可读报告。 |
+| `make_synthetic_docx.py` | 创建 synthetic DOCX，用于演示和 smoke test。 |
 
-## Repository Layout
+## 仓库结构
 
 ```text
 legal-document-format-skill/
+├── assets/
+│   └── logo.svg
 ├── README.md
 ├── LICENSE
 ├── AGENTS.md
@@ -224,21 +222,21 @@ legal-document-format-skill/
 └── tests/
 ```
 
-## Routing Model
+## 路由模型
 
-| Level | Request type | Load | Typical tooling |
+| 层级 | 请求类型 | 加载内容 | 常用工具 |
 |---|---|---|---|
-| L0 | Legal text cleanup | `content-lock.md`, text rules | `audit_text.py` |
-| L1 | Ordinary DOCX formatting | `routing.md`, `format-checklist.md` | Word or Markdown-to-DOCX tooling |
-| L2 | Exact template formatting | `exact-template.md`, `content-lock.md` | Base-replace DOCX pipeline |
-| L3 | Arbitration-award-style finalization | routing, content lock, template, checklist, visual validation | OpenXML and render checks |
-| L4 | Visual validation | `visual-validation.md`, `failure-modes.md` | LibreOffice, Poppler, PNG comparison |
+| L0 | 法律文本清理 | `content-lock.md`、文本规则 | `audit_text.py` |
+| L1 | 普通 DOCX 排版 | `routing.md`、`format-checklist.md` | Word 或 Markdown-to-DOCX 工具 |
+| L2 | 精确模板套版 | `exact-template.md`、`content-lock.md` | Base-replace DOCX pipeline |
+| L3 | 裁决书风格定稿 | 路由、内容锁定、模板、清单、视觉校验 | OpenXML 与渲染检查 |
+| L4 | 视觉校验 | `visual-validation.md`、`failure-modes.md` | LibreOffice、Poppler、PNG 比较 |
 
-The default path is intentionally light. Exact-template and arbitration-award-style rules are loaded only when the request calls for them.
+默认路径保持轻量。只有当任务确实需要时，才加载精确模板和裁决书风格规则。
 
-## Local Verification
+## 本地验证
 
-Run:
+运行：
 
 ```bash
 bash -n skills/legal-document-format/scripts/render_docx.sh
@@ -246,48 +244,49 @@ python -m py_compile skills/legal-document-format/scripts/*.py tests/*.py
 python -m pytest
 ```
 
-Current local verification result:
+当前本地验证结果：
 
 ```text
 39 passed
 ```
 
-## Format Gate Policy
+## 格式门禁口径
 
-Before delivering a formatted legal document, confirm:
+交付格式化法律文书前，应确认：
 
-- content lock was respected;
-- exact-template inheritance was used when requested;
-- fonts, font size, line spacing, paragraph indentation, margins, headers, footers, page numbers, and punctuation were checked;
-- DOCX rendered successfully to PDF and PNG when visual validation was required;
-- reports distinguish errors, warnings, and informational findings;
-- all examples and reports are synthetic or properly sanitized.
+- 内容锁定已遵守；
+- 需要精确套版时，已经从母版继承；
+- 字体、字号、行距、缩进、页边距、页眉页脚、页码和标点已检查；
+- 需要视觉校验时，DOCX 已成功渲染为 PDF 和 PNG；
+- 报告区分 error、warning 和 info；
+- 示例和报告均为 synthetic 或已完成脱敏。
 
-## Privacy And Safety
+## 隐私与安全
 
-Do not commit:
+不要提交：
 
-- real pleadings, awards, contracts, evidence, or correspondence;
-- private institution templates;
-- client names, case numbers, trade secrets, or unpublished facts;
-- exported commercial-platform records containing private matter context.
+- 真实诉状、裁决书、合同、证据或往来函件；
+- 私有机构模板；
+- 客户名称、案号、商业秘密或未公开事实；
+- 带有真实项目上下文的商业平台导出记录。
 
-Use synthetic examples unless a human explicitly approves sanitized sample material.
+除非获得明确授权并完成脱敏，否则仅使用 synthetic 示例。
 
-## Brand Assets
+## 品牌资产
 
-The project logo is stored at:
+项目 Logo 位于：
 
 ```text
 assets/logo.svg
+assets/logo-generated.png
 ```
 
-It is intentionally simple: a legal document, a validation shield, and a check mark. Use it for README, release notes, package pages, and skill catalog cards.
+`logo.svg` 是 README 使用的可维护矢量版；`logo-generated.png` 是生成式图像版本，适用于发布说明、包页面和 Skill 目录卡片。Logo 采用“文书 + 门禁 + 盾牌 + 对勾”的组合。
 
-## Roadmap
+## 路线图
 
-- Add optional CI once repository credentials support GitHub workflow updates.
-- Add pixel-level visual diff as an optional advanced gate.
-- Expand OpenXML checks for style inheritance, section properties, fields, and numbering definitions.
-- Add more synthetic fixtures for template inheritance and pagination drift.
-- Package the skill for common agent runners.
+- 在仓库凭证支持 GitHub workflow 后补充 CI。
+- 增加可选的像素级视觉 diff。
+- 扩展 OpenXML 检查：样式继承、section 属性、字段、编号定义。
+- 增加更多 synthetic fixtures，用于模板继承和分页漂移场景。
+- 面向常见 Agent Runner 打包 Skill。

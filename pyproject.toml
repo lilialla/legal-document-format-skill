@@ -1,7 +1,7 @@
 [project]
 name = "legal-document-format-skill"
 version = "0.2.0"
-description = "Agent skill for legal DOCX formatting, content locking, and render validation."
+description = "面向 AI 法律工作流的 DOCX 模板继承、内容锁定、渲染校验与格式门禁 Skill。"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }

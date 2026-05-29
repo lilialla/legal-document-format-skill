@@ -1,6 +1,5 @@
-# Synthetic Examples
+# Synthetic 示例
 
-This directory contains synthetic-only examples. Do not add real case files, institution templates, client facts, pleadings, awards, evidence, or confidential correspondence.
+本目录只存放 synthetic 示例。不要加入真实案件文件、机构模板、客户事实、诉状、裁决书、证据或保密通信。
 
-The Markdown fragment is intentionally not a complete award. It exists to test routing, content-lock discussion, and format-check report structure without exposing private material.
-
+当前 Markdown 片段不是完整裁决书，仅用于测试路由、内容锁定说明和格式报告结构，避免暴露任何真实材料。

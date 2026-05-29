@@ -1,18 +1,30 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">Legal Document Format Skill logo</title>
-  <desc id="desc">A document, gate, and check mark icon for legal document formatting validation.</desc>
-  <rect width="512" height="512" rx="96" fill="#0F172A"/>
-  <rect x="72" y="64" width="296" height="384" rx="28" fill="#F8FAFC"/>
-  <path d="M296 64H340C355.464 64 368 76.536 368 92V136L296 64Z" fill="#D6E4FF"/>
-  <path d="M296 64V120C296 128.837 303.163 136 312 136H368" stroke="#1E3A8A" stroke-width="16" stroke-linejoin="round"/>
-  <rect x="116" y="150" width="188" height="18" rx="9" fill="#1E3A8A"/>
-  <rect x="116" y="198" width="208" height="14" rx="7" fill="#64748B"/>
-  <rect x="116" y="232" width="178" height="14" rx="7" fill="#64748B"/>
-  <rect x="116" y="266" width="208" height="14" rx="7" fill="#64748B"/>
-  <rect x="116" y="300" width="144" height="14" rx="7" fill="#64748B"/>
-  <path d="M150 367H262" stroke="#CBD5E1" stroke-width="14" stroke-linecap="round"/>
-  <path d="M184 396H262" stroke="#CBD5E1" stroke-width="14" stroke-linecap="round"/>
-  <path d="M332 270L426 220V328C426 388.5 384.5 424.5 332 448C279.5 424.5 238 388.5 238 328V220L332 270Z" fill="#2563EB"/>
-  <path d="M289 337L319 367L377 303" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M238 220L332 270L426 220" stroke="#93C5FD" stroke-width="14" stroke-linejoin="round"/>
+  <title id="title">文格 Logo</title>
+  <desc id="desc">法律文书格式门禁项目标识：文书、盾牌、门禁与对勾。</desc>
+  <defs>
+    <linearGradient id="bg" x1="70" y1="48" x2="442" y2="464" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#061A3A"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="238" y1="216" x2="428" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1D4ED8"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg)"/>
+  <rect x="76" y="58" width="292" height="392" rx="30" fill="#F8FAFC"/>
+  <path d="M296 58H338C354.569 58 368 71.4315 368 88V136L296 58Z" fill="#DBEAFE"/>
+  <path d="M296 58V120C296 128.837 303.163 136 312 136H368" stroke="#1E3A8A" stroke-width="14" stroke-linejoin="round"/>
+  <text x="126" y="170" fill="#0B1F48" font-family="Songti SC, SimSun, Noto Serif CJK SC, serif" font-size="74" font-weight="700">文</text>
+  <text x="224" y="170" fill="#1D4ED8" font-family="Songti SC, SimSun, Noto Serif CJK SC, serif" font-size="74" font-weight="700">格</text>
+  <rect x="120" y="210" width="188" height="16" rx="8" fill="#0F2B5B"/>
+  <rect x="120" y="252" width="164" height="13" rx="6.5" fill="#64748B"/>
+  <rect x="120" y="286" width="196" height="13" rx="6.5" fill="#64748B"/>
+  <rect x="120" y="320" width="132" height="13" rx="6.5" fill="#64748B"/>
+  <path d="M336 250L430 202V314C430 379 388 419 336 446C284 419 242 379 242 314V202L336 250Z" fill="url(#blue)"/>
+  <path d="M242 202L336 250L430 202" stroke="#93C5FD" stroke-width="14" stroke-linejoin="round"/>
+  <path d="M292 333L322 363L380 299" stroke="#FFFFFF" stroke-width="25" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M210 428C242 402 285 389 336 389C386 389 430 402 462 428" stroke="#60A5FA" stroke-width="16" stroke-linecap="round"/>
+  <rect x="214" y="272" width="26" height="152" rx="10" fill="#1D4ED8"/>
+  <rect x="432" y="272" width="26" height="152" rx="10" fill="#1D4ED8"/>
 </svg>

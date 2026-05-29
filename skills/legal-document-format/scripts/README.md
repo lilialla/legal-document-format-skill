@@ -1,10 +1,10 @@
-# Scripts
+# 脚本说明
 
-These scripts are local quality gates for the legal document format skill. They use only local files and should not contain secrets, private templates, or real case material.
+这些脚本是“文格”法律文书格式门禁的本地质量检查工具。脚本只处理本地文件，不应包含密钥、私有模板或真实案件材料。
 
 ## `render_docx.sh`
 
-Renders a DOCX to PDF with LibreOffice headless, then renders the PDF to PNG pages with Poppler.
+使用 LibreOffice headless 将 DOCX 渲染为 PDF，再使用 Poppler 将 PDF 渲染为 PNG 页面。
 
 ```bash
 ./skills/legal-document-format/scripts/render_docx.sh input.docx output/rendered
@@ -12,17 +12,17 @@ Renders a DOCX to PDF with LibreOffice headless, then renders the PDF to PNG pag
 
 ## `audit_text.py`
 
-Audits text or a UTF-8 text file for legal-format punctuation and spacing issues.
+审计文本或 UTF-8 文本文件中的法律文书标点、空格和占位符问题。
 
 ```bash
 ./skills/legal-document-format/scripts/audit_text.py "申请人: 张三" --json
 ```
 
-Use `--file` when the input must be a file path, `--no-excerpt` for sensitive documents, and `--fail-on-issue` when the audit should behave as a strict gate.
+当输入必须是文件路径时使用 `--file`；处理敏感文本时使用 `--no-excerpt`；需要严格门禁时使用 `--fail-on-issue`。
 
 ## `audit_docx_structure.py`
 
-Audits a DOCX package with standard-library ZIP and OpenXML parsing. It reports package parts, sections, paragraphs, tables, headers, footers, styles, and numbering.
+使用 Python 标准库读取 DOCX ZIP/OpenXML 结构，报告关键包部件、section、段落、表格、页眉页脚、样式和编号。
 
 ```bash
 ./skills/legal-document-format/scripts/audit_docx_structure.py input.docx --json
@@ -30,7 +30,7 @@ Audits a DOCX package with standard-library ZIP and OpenXML parsing. It reports 
 
 ## `compare_rendered_pages.py`
 
-Compares two directories of rendered PNG pages. This is a metadata gate, not a pixel diff.
+比较两个 PNG 渲染页目录。这是元数据门禁，不是像素级 diff。
 
 ```bash
 ./skills/legal-document-format/scripts/compare_rendered_pages.py baseline/png candidate/png --json
@@ -38,7 +38,7 @@ Compares two directories of rendered PNG pages. This is a metadata gate, not a p
 
 ## `format_gate.py`
 
-Aggregates text, DOCX structure, and rendered-page checks into one local report.
+将文本、DOCX 结构和渲染页检查聚合成一个本地报告。
 
 ```bash
 ./skills/legal-document-format/scripts/format_gate.py \
@@ -49,18 +49,18 @@ Aggregates text, DOCX structure, and rendered-page checks into one local report.
   --json --no-excerpt
 ```
 
-Use `--text-file path/to/input.txt` when the text input must be read from a file.
+当文本输入必须来自文件时使用 `--text-file path/to/input.txt`。
 
-The aggregate gate returns exit code `1` only when at least one check reports an error. Warning-only reports exit `0`.
+聚合门禁只有在至少一个检查返回 error 时才以退出码 `1` 结束；仅有 warning 时退出码为 `0`。
 
 ## `make_synthetic_docx.py`
 
-Generates a minimal synthetic DOCX fixture for local smoke tests.
+生成最小 synthetic DOCX，用于本地演示和 smoke test。
 
 ```bash
 ./skills/legal-document-format/scripts/make_synthetic_docx.py output/synthetic.docx
 ```
 
-The generator refuses to overwrite existing files unless `--force` is provided.
+除非显式传入 `--force`，否则生成器不会覆盖已有文件。
 
-All scripts support `--help`; Python audit scripts support human-readable output and `--json`. Scripts return non-zero for structural or visual errors. Warning-only text audits return zero unless `--fail-on-issue` is used. Rendered-page comparison reports `status: warning` for warning-only differences while keeping exit code `0`.
+所有脚本均支持 `--help`。Python 审计脚本支持人类可读输出和 `--json`。结构性或视觉错误会返回非零退出码；文本 warning 默认不阻断，除非使用 `--fail-on-issue`。
