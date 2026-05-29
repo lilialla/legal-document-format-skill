@@ -1,0 +1,18 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Legal Document Format Skill logo</title>
+  <desc id="desc">A document, gate, and check mark icon for legal document formatting validation.</desc>
+  <rect width="512" height="512" rx="96" fill="#0F172A"/>
+  <rect x="72" y="64" width="296" height="384" rx="28" fill="#F8FAFC"/>
+  <path d="M296 64H340C355.464 64 368 76.536 368 92V136L296 64Z" fill="#D6E4FF"/>
+  <path d="M296 64V120C296 128.837 303.163 136 312 136H368" stroke="#1E3A8A" stroke-width="16" stroke-linejoin="round"/>
+  <rect x="116" y="150" width="188" height="18" rx="9" fill="#1E3A8A"/>
+  <rect x="116" y="198" width="208" height="14" rx="7" fill="#64748B"/>
+  <rect x="116" y="232" width="178" height="14" rx="7" fill="#64748B"/>
+  <rect x="116" y="266" width="208" height="14" rx="7" fill="#64748B"/>
+  <rect x="116" y="300" width="144" height="14" rx="7" fill="#64748B"/>
+  <path d="M150 367H262" stroke="#CBD5E1" stroke-width="14" stroke-linecap="round"/>
+  <path d="M184 396H262" stroke="#CBD5E1" stroke-width="14" stroke-linecap="round"/>
+  <path d="M332 270L426 220V328C426 388.5 384.5 424.5 332 448C279.5 424.5 238 388.5 238 328V220L332 270Z" fill="#2563EB"/>
+  <path d="M289 337L319 367L377 303" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M238 220L332 270L426 220" stroke="#93C5FD" stroke-width="14" stroke-linejoin="round"/>
+</svg>
