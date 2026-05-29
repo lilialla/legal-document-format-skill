@@ -40,7 +40,7 @@
 
 ## `compare_rendered_pages.py`
 
-比较两个 PNG 渲染页目录。这是元数据门禁，不是像素级 diff。
+比较两个 PNG 渲染页目录。内置门禁检查页数、文件名、PNG 有效性、尺寸、文件大小和文件哈希；它仍不是第三方像素级 diff。
 
 ```bash
 ./skills/legal-document-format/scripts/compare_rendered_pages.py baseline/png candidate/png --json
@@ -57,13 +57,29 @@
   --baseline-png baseline/png \
   --candidate-png candidate/png \
   --require-visual \
+  --fail-on-warning \
   --json --no-excerpt
 ```
 
 当文本输入必须来自文件时使用 `--text-file path/to/input.txt`。
 发布档门禁应使用 `--require-visual`，缺少渲染页输入时直接报错。
+发布前严格门禁可同时使用 `--fail-on-warning`。
 
 聚合门禁只有在至少一个检查返回 error 时才以退出码 `1` 结束；仅有 warning 时退出码为 `0`。
+
+## `release_smoke.py`
+
+运行 V1 发布 smoke gate，覆盖发布依赖、shell 语法、Python 编译、synthetic DOCX、DOCX 渲染、3 路并行 LibreOffice 渲染、强制视觉格式门禁和 pytest。
+
+```bash
+./skills/legal-document-format/scripts/release_smoke.py
+```
+
+如果只想验证渲染链路而暂时没有安装测试依赖，可使用：
+
+```bash
+./skills/legal-document-format/scripts/release_smoke.py --skip-tests
+```
 
 ## `make_synthetic_docx.py`
 

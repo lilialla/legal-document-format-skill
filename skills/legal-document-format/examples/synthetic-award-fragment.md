@@ -1,18 +1,17 @@
-# Synthetic Arbitration Award Fragment
+# Synthetic 仲裁裁决书片段
 
-Case No.: SYN-2026-001
+案号：SYN-2026-001
 
-Claimant: Alpha Trading Co., Ltd.
+申请人：甲方贸易有限公司
 
-Respondent: Beta Equipment Co., Ltd.
+被申请人：乙方设备有限公司
 
-## Claims
+## 仲裁请求
 
-1. Respondent shall pay the outstanding purchase price of CNY 100,000.
-2. Respondent shall pay late-payment interest calculated from 2026-01-01.
-3. Respondent shall bear arbitration costs.
+1. 被申请人向申请人支付货款人民币 100,000 元。
+2. 被申请人支付以人民币 100,000 元为基数，自 2026 年 1 月 1 日起计算的逾期付款利息。
+3. 被申请人承担本案仲裁费用。
 
-## Format-Lock Notes
+## 格式锁定说明
 
-The party names, case number, amount, date, claims, and cost allocation text are synthetic but must be treated as locked during formatting tests.
-
+上述当事人名称、案号、金额、日期、仲裁请求和费用承担文字均为 synthetic 示例，但在格式测试中应视为已锁定内容，不得因排版、套版或标点处理而改写法律实体含义。

@@ -14,12 +14,13 @@
   · <a href="#agent-与插件策略">Agent 与插件策略</a>
   · <a href="#发布版强制校验">发布版强制校验</a>
   · <a href="#项目经验与外部参考">项目经验与外部参考</a>
+  · <a href="#v1-发布资料">V1 发布资料</a>
   · <a href="#脚本说明">脚本说明</a>
   · <a href="#隐私与安全">隐私与安全</a>
 </p>
 
 <p align="center">
-  <img alt="发布状态" src="https://img.shields.io/badge/状态-v0.2%20发布候选-blue">
+  <img alt="发布状态" src="https://img.shields.io/badge/状态-v1.0.0%20可发布-blue">
   <img alt="Python 版本" src="https://img.shields.io/badge/Python-3.9%2B-blue">
   <img alt="视觉校验" src="https://img.shields.io/badge/视觉校验-LibreOffice%20%2B%20Poppler-7aa2a7">
   <img alt="许可证" src="https://img.shields.io/badge/许可证-MIT-green">
@@ -34,7 +35,7 @@
 
 | 项目 | 说明 |
 |---|---|
-| 发布状态 | `v0.2 发布候选版` |
+| 发布状态 | `v1.0.0 可发布版` |
 | 核心运行时 | Python 3.9+，核心审计脚本仅使用标准库 |
 | 发布版强制工具 | LibreOffice + Poppler，用于 DOCX -> PDF -> PNG 视觉校验 |
 | 主要输出 | JSON 报告、人类可读门禁报告、PDF/PNG 渲染产物 |
@@ -43,13 +44,13 @@
 
 ## 发布状态
 
-`v0.2 发布候选版`
+`v1.0.0 可发布版`
 
-当前版本适合本地试用、Skill 打包实验和公开展示。对外分发时，应按“发布版强制校验”安装视觉校验工具；只安装 Python 的 `core` 档位仅用于开发、演示或无渲染环境的预检，不应被称为完整发布版。
+当前版本适合本地试用、Skill 打包实验、公开展示和 V1 发布。对外分发时，应按“发布版强制校验”安装视觉校验工具；只安装 Python 的 `core` 档位仅用于开发、演示或无渲染环境的预检，不应被称为完整发布版。
 
 ## 推荐 Topics
 
-GitHub 仓库建议使用以下 topics。本仓库已设置：
+GitHub 仓库建议使用以下 topics；发布前应在仓库设置中保持一致：
 
 ```text
 legaltech agent-skill docx openxml libreoffice poppler legal-documents
@@ -69,7 +70,7 @@ document-automation visual-validation quality-gate python synthetic-data
 - 不提供法律意见。
 - 不承诺自动生成可提交法院或仲裁机构的正式文件。
 - 不包含真实案件、私有仲裁模板、客户事实、机构特定规则或保密示例。
-- 不内置第三方像素级视觉 diff。当前 PNG 比较是轻量元数据门禁；如需像素级或 PDF 高亮差异，可接入 `diff-pdf`、`diff-pdf-visually` 或同类工具。
+- 不内置第三方像素级视觉 diff。当前 PNG 比较覆盖页数、尺寸、有效性、大小和文件哈希；如需像素级或 PDF 高亮差异，可接入 `diff-pdf`、`diff-pdf-visually` 或同类工具。
 - 不提供托管服务或远程处理路径。当前工具以本地执行为主。
 
 ## 能力矩阵
@@ -89,7 +90,7 @@ document-automation visual-validation quality-gate python synthetic-data
 核心审计脚本运行时只依赖 Python 标准库：
 
 ```bash
-python --version  # 3.9+
+python3 --version  # 3.9+
 ```
 
 渲染校验需要本地文档工具：
@@ -108,7 +109,7 @@ pdftoppm -h         # Poppler
 开发测试依赖：
 
 ```bash
-python -m pip install -e ".[test]"
+python3 -m pip install -e ".[test]"
 ```
 
 ## Agent 与插件策略
@@ -142,12 +143,21 @@ python -m pip install -e ".[test]"
   --baseline-png out/rendered/png \
   --candidate-png out/rendered/png \
   --require-visual \
+  --fail-on-warning \
   --json
 ```
 
 `--require-visual` 会强制要求 PNG 渲染页输入。缺少视觉校验输入时，门禁直接报错。
 
+一键发布 smoke：
+
+```bash
+./skills/legal-document-format/scripts/release_smoke.py
+```
+
 ## 分发档位
+
+以下为发布能力档位，不是 `pip` extras 名称。
 
 | 档位 | 组件 | 适合用户 |
 |---|---|---|
@@ -211,9 +221,10 @@ mkdir -p out
 | `audit_text.py` | 审计中文法律文本中的标点和空格问题。 |
 | `audit_docx_structure.py` | 读取 DOCX ZIP/OpenXML，报告 section、段落、表格、页眉页脚、样式、编号和损坏的关键 part。 |
 | `render_docx.sh` | 使用 LibreOffice headless 和 Poppler 执行 DOCX -> PDF -> PNG。 |
-| `compare_rendered_pages.py` | 比较 PNG 渲染页目录的页数、文件名、PNG 有效性、尺寸和文件大小差异。 |
+| `compare_rendered_pages.py` | 比较 PNG 渲染页目录的页数、文件名、PNG 有效性、尺寸、文件大小和页面文件哈希差异。 |
 | `check_release_requirements.py` | 检查发布版所需的 Python、LibreOffice 和 Poppler 是否可用。 |
 | `format_gate.py` | 将文本、DOCX 和渲染页检查聚合为一个 JSON 或人类可读报告。 |
+| `release_smoke.py` | 一键运行 V1 发布 smoke gate，包括并行 LibreOffice 渲染检查。 |
 | `make_synthetic_docx.py` | 创建 synthetic DOCX，用于演示和 smoke test。 |
 
 ## 仓库结构
@@ -225,7 +236,11 @@ legal-document-format-skill/
 │   ├── logo-generated.png
 │   └── logo.svg
 ├── README.md
+├── CHANGELOG.md
+├── CONTRIBUTING.md
 ├── LICENSE
+├── RELEASE.md
+├── SECURITY.md
 ├── AGENTS.md
 ├── pyproject.toml
 ├── skills/
@@ -246,6 +261,7 @@ legal-document-format-skill/
 │       │   ├── check_release_requirements.py
 │       │   ├── compare_rendered_pages.py
 │       │   ├── format_gate.py
+│       │   ├── release_smoke.py
 │       │   ├── make_synthetic_docx.py
 │       │   └── render_docx.sh
 │       └── examples/
@@ -272,14 +288,15 @@ legal-document-format-skill/
 
 ```bash
 bash -n skills/legal-document-format/scripts/render_docx.sh
-python -m py_compile skills/legal-document-format/scripts/*.py tests/*.py
-python -m pytest
+python3 -m py_compile skills/legal-document-format/scripts/*.py tests/*.py
+python3 -m pytest
+./skills/legal-document-format/scripts/release_smoke.py
 ```
 
 当前本地验证结果：
 
 ```text
-44 passed
+51 passed
 ```
 
 ## 项目经验与外部参考
@@ -296,9 +313,20 @@ python -m pytest
 |---|---|---|
 | [GitHub README 官方说明](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes) | README 应说明项目做什么、为什么有用、如何开始、如何获得帮助。 | 首页保留标题、Logo、Badges、快速开始、依赖、脚本、隐私和路线图。 |
 | [python-docx](https://github.com/python-openxml/python-docx) | DOCX 读写生态的事实标准之一。 | 暂不作为核心依赖；当前以标准库检查 OpenXML，降低安装面。 |
-| [diff-pdf](https://github.com/vslavik/diff-pdf) | PDF 视觉比较和差异高亮。 | 作为增强视觉 diff 参考；默认链路仍是 LibreOffice + Poppler + PNG 元数据门禁。 |
+| [diff-pdf](https://github.com/vslavik/diff-pdf) | PDF 视觉比较和差异高亮。 | 作为增强视觉 diff 参考；默认链路仍是 LibreOffice + Poppler + PNG 渲染页门禁。 |
 | [diff-pdf-visually](https://github.com/bgeron/diff-pdf-visually) | PDF 转 PNG 后做页面视觉一致性判断。 | 借鉴“页数、尺寸、渲染图比较”的思路。 |
 | [pdf-visual-diff](https://github.com/moshensky/pdf-visual-diff) | snapshot 式 PDF 视觉回归。 | 借鉴 snapshot 机制；不引入 Node/Jest 作为默认依赖。 |
+
+参考范围：截至 2026-05-29，仅用于公开功能定位和工程机制取舍，不等同于完整竞品审计。
+
+## V1 发布资料
+
+- [CHANGELOG.md](CHANGELOG.md)：公开版本变化。
+- [RELEASE.md](RELEASE.md)：V1 发布范围、发布前命令和当前证据。
+- [CONTRIBUTING.md](CONTRIBUTING.md)：贡献、验证和文档规则。
+- [SECURITY.md](SECURITY.md)：安全报告和敏感信息处理规则。
+
+说明：当前仓库写入凭证没有 GitHub workflow scope，V1 以本地 `release_smoke.py` 作为发布门禁；启用 GitHub Actions 后应复用同一命令。
 
 ## 格式门禁口径
 
@@ -336,7 +364,6 @@ assets/logo.png
 
 ## 路线图
 
-- 在仓库凭证支持 GitHub workflow 后补充 CI。
 - 增加可选的像素级视觉 diff。
 - 扩展 OpenXML 检查：样式继承、section 属性、字段、编号定义。
 - 增加更多 synthetic fixtures，用于模板继承和分页漂移场景。

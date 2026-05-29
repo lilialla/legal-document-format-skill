@@ -1,6 +1,6 @@
 [project]
 name = "legal-document-format-skill"
-version = "0.2.0"
+version = "1.0.0"
 description = "面向 AI 法律工作流的 DOCX 模板继承、内容锁定、渲染校验与格式门禁 Skill。"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -20,6 +20,7 @@ keywords = [
 [project.urls]
 Homepage = "https://github.com/lilialla/legal-document-format-skill"
 Repository = "https://github.com/lilialla/legal-document-format-skill"
+Changelog = "https://github.com/lilialla/legal-document-format-skill/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 test = [

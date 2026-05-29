@@ -20,6 +20,7 @@
 - 确认 README 指令与实际文件一致；
 - 确认没有新增私有样本材料；
 - 如果渲染 DOCX，应确认 LibreOffice 生成 PDF，Poppler 生成 PNG 页面。
+- 发布档变更应运行 `./skills/legal-document-format/scripts/release_smoke.py`。
 
 ## 法律边界
 

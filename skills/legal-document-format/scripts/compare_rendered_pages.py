@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import struct
 import sys
@@ -25,14 +26,15 @@ class PageInfo:
     png_valid: bool
     width: int | None
     height: int | None
+    sha256: str | None
     error: str | None = None
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Compare two directories of rendered PNG pages using metadata gates: "
-            "page count, file names, file size, PNG signature, and IHDR dimensions."
+            "Compare two directories of rendered PNG pages using release gates: "
+            "page count, file names, PNG validity, IHDR dimensions, file size, and byte hashes."
         )
     )
     parser.add_argument(
@@ -112,6 +114,13 @@ def read_png_info(path: Path) -> tuple[bool, int | None, int | None, str | None]
     return True, width, height, None
 
 
+def file_sha256(path: Path) -> str | None:
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
 def collect_png_pages(directory: Path) -> tuple[dict[str, PageInfo], list[dict[str, Any]]]:
     issues: list[dict[str, Any]] = []
     pages: dict[str, PageInfo] = {}
@@ -149,6 +158,7 @@ def collect_png_pages(directory: Path) -> tuple[dict[str, PageInfo], list[dict[s
             png_valid=valid,
             width=width,
             height=height,
+            sha256=file_sha256(path),
             error=error,
         )
         if not valid:
@@ -288,6 +298,24 @@ def compare_page_sets(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
                 )
             )
 
+        if (
+            baseline.png_valid
+            and candidate.png_valid
+            and baseline.sha256
+            and candidate.sha256
+            and baseline.sha256 != candidate.sha256
+        ):
+            issues.append(
+                issue(
+                    "content_delta",
+                    f"{name}: PNG bytes differ while page name is shared",
+                    "warning",
+                    file=name,
+                    baseline_sha256=baseline.sha256,
+                    candidate_sha256=candidate.sha256,
+                )
+            )
+
     error_count = sum(1 for item in issues if item["severity"] == "error")
     warning_count = sum(1 for item in issues if item["severity"] == "warning")
     if error_count:
@@ -340,7 +368,7 @@ def format_human_report(report: dict[str, Any]) -> str:
         for item in report["issues"]:
             lines.append(f"- [{item['severity']}] {item['code']}: {item['message']}")
     else:
-        lines.extend(["", "No metadata differences found."])
+        lines.extend(["", "No rendered page differences found by the built-in gate."])
 
     return "\n".join(lines)
 

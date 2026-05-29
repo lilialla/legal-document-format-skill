@@ -69,8 +69,15 @@ mkdir -p "$output_dir/pdf" "$output_dir/png"
 input_abs=$(cd "$(dirname "$input_docx")" && pwd)/$(basename "$input_docx")
 stem=$(basename "$input_docx")
 stem=${stem%.*}
+profile_dir=$(mktemp -d "${TMPDIR:-/tmp}/wenge-lo-profile.XXXXXX")
+cleanup() {
+  rm -rf "$profile_dir"
+}
+trap cleanup EXIT
+profile_uri=$(python3 -c 'from pathlib import Path; import sys; print(Path(sys.argv[1]).resolve().as_uri())' "$profile_dir")
 
 "$soffice_bin" \
+  "-env:UserInstallation=$profile_uri" \
   --headless \
   --convert-to pdf \
   --outdir "$output_dir/pdf" \
@@ -91,4 +98,3 @@ fi
 
 echo "PDF: $pdf_path"
 echo "PNG: $output_dir/png/${stem}-page-*.png"
-

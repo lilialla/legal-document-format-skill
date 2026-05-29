@@ -121,6 +121,14 @@ def test_text_warning_returns_zero_and_aggregates_json():
     assert any(issue["check"] == "text" and issue["code"] == "HALFWIDTH_COLON_CN" for issue in payload["issues"])
 
 
+def test_fail_on_warning_returns_one_for_text_warning():
+    result = run_cli("--text", "申请人: 张三", "--json", "--fail-on-warning")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["summary"]["status"] == "warning"
+
+
 def test_docx_error_returns_one(tmp_path: Path):
     broken_docx = tmp_path / "broken.docx"
     write_docx(
@@ -273,3 +281,4 @@ def test_help_and_executable_bit():
     assert "--docx" in result.stdout
     assert "--baseline-png" in result.stdout
     assert "--require-visual" in result.stdout
+    assert "--fail-on-warning" in result.stdout

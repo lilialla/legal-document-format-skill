@@ -147,6 +147,20 @@ def test_cli_returns_zero_for_warning_only_size_delta(tmp_path: Path):
     assert payload["summary"]["status"] == "warning"
     assert payload["summary"]["error_count"] == 0
     assert any(item["code"] == "size_delta" for item in payload["issues"])
+    assert any(item["code"] == "content_delta" for item in payload["issues"])
+
+
+def test_compare_reports_content_delta_for_same_size_different_png(tmp_path: Path):
+    module = load_module()
+    baseline = tmp_path / "baseline"
+    candidate = tmp_path / "candidate"
+    write_png(baseline, "doc-page-1.png", 800, 1000, b"alpha")
+    write_png(candidate, "doc-page-1.png", 800, 1000, b"bravo")
+
+    report = module.compare_page_sets(baseline, candidate)
+
+    assert report["summary"]["status"] == "warning"
+    assert any(item["code"] == "content_delta" for item in report["issues"])
 
 
 def test_cli_help_runs():

@@ -59,6 +59,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Require baseline and candidate PNG page directories for release-grade visual validation.",
     )
     parser.add_argument(
+        "--fail-on-warning",
+        action="store_true",
+        help="Return a non-zero exit code when warnings are present.",
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="Write a structured JSON report instead of a human-readable report.",
@@ -281,7 +286,11 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(format_human_report(report, no_excerpt=args.no_excerpt))
 
-    return 1 if report["summary"]["error_count"] else 0
+    if report["summary"]["error_count"]:
+        return 1
+    if args.fail_on_warning and report["summary"]["warning_count"]:
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

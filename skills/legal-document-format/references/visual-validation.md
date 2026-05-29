@@ -12,7 +12,7 @@ DOCX -> LibreOffice headless -> PDF -> Poppler pdftoppm -> PNG 页面
 
 默认使用 `scripts/render_docx.sh`。
 
-当同时存在基准 PNG 页面和候选 PNG 页面时，使用 `scripts/compare_rendered_pages.py`。内置比较是轻量门禁，检查页数、文件名、文件大小、PNG 有效性和尺寸；它不是像素级 diff。
+当同时存在基准 PNG 页面和候选 PNG 页面时，使用 `scripts/compare_rendered_pages.py`。内置比较检查页数、文件名、PNG 有效性、尺寸、文件大小和文件哈希；它不是第三方像素级 diff。
 
 ## 必需工具
 
