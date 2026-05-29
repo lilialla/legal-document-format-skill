@@ -390,7 +390,7 @@ def audit_punctuation_fonts(
                         make_issue(
                             "punctuation_font_missing_east_asia",
                             "warning",
-                            "中文标点所在 run 缺少 eastAsia 字体设置，可能回退到英文字体。",
+                            "中文标点所在 run 缺少 eastAsia 字体设置，可能与模板字体规则不一致。",
                             part,
                         )
                     )
