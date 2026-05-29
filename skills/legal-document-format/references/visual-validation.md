@@ -2,6 +2,8 @@
 
 视觉校验用于检查 DOCX 是否可以渲染为可审阅页面。它不证明法律实体内容正确。
 
+对外发布、插件分发、正式演示以及 L3/L4 文书格式任务，视觉校验不是可选项。缺少 LibreOffice 或 Poppler 时，只能说明 core 预检可用，不能说明发布版完整可用。
+
 ## 默认渲染链路
 
 ```text
@@ -15,7 +17,8 @@ DOCX -> LibreOffice headless -> PDF -> Poppler pdftoppm -> PNG 页面
 ## 必需工具
 
 - LibreOffice 的 `soffice`；
-- Poppler 的 `pdftoppm`。
+- Poppler 的 `pdftoppm`；
+- `scripts/check_release_requirements.py --mode release` 必须通过。
 
 macOS 上 LibreOffice 可能位于：
 
@@ -58,3 +61,4 @@ macOS 上 LibreOffice 可能位于：
 - `baseline differed`：视觉比较发现差异；
 - `no baseline`：渲染成功，但无法进行视觉 diff。
 
+发布档门禁应使用 `scripts/format_gate.py --require-visual`。如果没有 `--baseline-png` 和 `--candidate-png`，应视为发布门禁未完成。

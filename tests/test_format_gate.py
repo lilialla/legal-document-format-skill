@@ -163,6 +163,13 @@ def test_no_input_is_argument_error():
     assert "provide at least one check input" in result.stderr
 
 
+def test_require_visual_requires_png_pair():
+    result = run_cli("--docx", "input.docx", "--require-visual", "--json")
+
+    assert result.returncode == 2
+    assert "--require-visual requires --baseline-png and --candidate-png" in result.stderr
+
+
 def test_no_excerpt_omits_sensitive_text_from_json_and_report():
     json_result = run_cli("--text", "申请人: 张三", "--json", "--no-excerpt")
     human_result = run_cli("--text", "申请人: 张三", "--no-excerpt")
@@ -265,3 +272,4 @@ def test_help_and_executable_bit():
     assert "--text-file" in result.stdout
     assert "--docx" in result.stdout
     assert "--baseline-png" in result.stdout
+    assert "--require-visual" in result.stdout

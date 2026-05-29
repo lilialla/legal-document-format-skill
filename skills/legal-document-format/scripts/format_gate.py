@@ -54,6 +54,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory containing candidate rendered PNG pages.",
     )
     parser.add_argument(
+        "--require-visual",
+        action="store_true",
+        help="Require baseline and candidate PNG page directories for release-grade visual validation.",
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="Write a structured JSON report instead of a human-readable report.",
@@ -256,10 +261,13 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
     has_text = args.text is not None or args.text_file is not None
     has_docx = args.docx is not None
     has_png = args.baseline_png is not None or args.candidate_png is not None
+    has_png_pair = args.baseline_png is not None and args.candidate_png is not None
     if not has_text and not has_docx and not has_png:
         parser.error("provide at least one check input")
     if (args.baseline_png is None) != (args.candidate_png is None):
         parser.error("--baseline-png and --candidate-png must be provided together")
+    if args.require_visual and not has_png_pair:
+        parser.error("--require-visual requires --baseline-png and --candidate-png")
 
 
 def main(argv: list[str] | None = None) -> int:

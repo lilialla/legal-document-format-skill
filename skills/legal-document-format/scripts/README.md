@@ -10,6 +10,16 @@
 ./skills/legal-document-format/scripts/render_docx.sh input.docx output/rendered
 ```
 
+## `check_release_requirements.py`
+
+检查发布版依赖。完整发布档要求 Python 3.9+、LibreOffice `soffice` 和 Poppler `pdftoppm` 全部可用。
+
+```bash
+./skills/legal-document-format/scripts/check_release_requirements.py --mode release
+```
+
+只做开发预检时可使用 `--mode core`，但 core 通过不代表发布版完整可用。
+
 ## `audit_text.py`
 
 审计文本或 UTF-8 文本文件中的法律文书标点、空格和占位符问题。
@@ -46,10 +56,12 @@
   --docx input.docx \
   --baseline-png baseline/png \
   --candidate-png candidate/png \
+  --require-visual \
   --json --no-excerpt
 ```
 
 当文本输入必须来自文件时使用 `--text-file path/to/input.txt`。
+发布档门禁应使用 `--require-visual`，缺少渲染页输入时直接报错。
 
 聚合门禁只有在至少一个检查返回 error 时才以退出码 `1` 结束；仅有 warning 时退出码为 `0`。
 

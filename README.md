@@ -12,14 +12,16 @@
   <a href="#快速开始">快速开始</a>
   · <a href="#能力矩阵">能力矩阵</a>
   · <a href="#agent-与插件策略">Agent 与插件策略</a>
+  · <a href="#发布版强制校验">发布版强制校验</a>
+  · <a href="#项目经验与外部参考">项目经验与外部参考</a>
   · <a href="#脚本说明">脚本说明</a>
   · <a href="#隐私与安全">隐私与安全</a>
 </p>
 
 <p align="center">
-  <img alt="发布状态" src="https://img.shields.io/badge/状态-v0.1%20技术预览-blue">
+  <img alt="发布状态" src="https://img.shields.io/badge/状态-v0.2%20发布候选-blue">
   <img alt="Python 版本" src="https://img.shields.io/badge/Python-3.9%2B-blue">
-  <img alt="运行时依赖" src="https://img.shields.io/badge/核心运行时-标准库-green">
+  <img alt="视觉校验" src="https://img.shields.io/badge/视觉校验-LibreOffice%20%2B%20Poppler-7aa2a7">
   <img alt="许可证" src="https://img.shields.io/badge/许可证-MIT-green">
   <img alt="示例数据" src="https://img.shields.io/badge/示例-synthetic%20only-orange">
 </p>
@@ -32,18 +34,18 @@
 
 | 项目 | 说明 |
 |---|---|
-| 发布状态 | `v0.1 技术预览版` |
+| 发布状态 | `v0.2 发布候选版` |
 | 核心运行时 | Python 3.9+，核心审计脚本仅使用标准库 |
-| 渲染工具 | LibreOffice + Poppler，用于 DOCX -> PDF -> PNG |
+| 发布版强制工具 | LibreOffice + Poppler，用于 DOCX -> PDF -> PNG 视觉校验 |
 | 主要输出 | JSON 报告、人类可读门禁报告、PDF/PNG 渲染产物 |
 | 安全策略 | 仅使用 synthetic 示例；不包含真实案件、客户信息或私有模板 |
 | 适合场景 | 本地试用、Agent Skill 打包、法律文书格式 QA、公开评审 |
 
 ## 发布状态
 
-`v0.1 技术预览版`
+`v0.2 发布候选版`
 
-当前版本已经适合本地试用、Skill 打包实验和公开展示。它不是完整的法律交付系统，也不替代律师审阅。
+当前版本适合本地试用、Skill 打包实验和公开展示。对外分发时，应按“发布版强制校验”安装视觉校验工具；只安装 Python 的 `core` 档位仅用于开发、演示或无渲染环境的预检，不应被称为完整发布版。
 
 ## 推荐 Topics
 
@@ -67,7 +69,7 @@ document-automation visual-validation quality-gate python synthetic-data
 - 不提供法律意见。
 - 不承诺自动生成可提交法院或仲裁机构的正式文件。
 - 不包含真实案件、私有仲裁模板、客户事实、机构特定规则或保密示例。
-- 不提供像素级视觉 diff。当前 PNG 比较是轻量元数据门禁，像素级 diff 可作为后续增强。
+- 不内置第三方像素级视觉 diff。当前 PNG 比较是轻量元数据门禁；如需像素级或 PDF 高亮差异，可接入 `diff-pdf`、`diff-pdf-visually` 或同类工具。
 - 不提供托管服务或远程处理路径。当前工具以本地执行为主。
 
 ## 能力矩阵
@@ -78,6 +80,7 @@ document-automation visual-validation quality-gate python synthetic-data
 | DOCX OpenXML 结构审计 | `audit_docx_structure.py` | Python 3.9+ | 可用 |
 | DOCX -> PDF -> PNG 渲染 | `render_docx.sh` | LibreOffice + Poppler | 可用 |
 | PNG 渲染页比较 | `compare_rendered_pages.py` | Python 3.9+ | 可用 |
+| 发布版依赖检查 | `check_release_requirements.py` | Python 3.9+；发布档要求 LibreOffice + Poppler | 可用 |
 | 聚合格式门禁 | `format_gate.py` | Python 3.9+；渲染输入可选 | 可用 |
 | synthetic DOCX 生成 | `make_synthetic_docx.py` | Python 3.9+ | 可用 |
 
@@ -110,24 +113,47 @@ python -m pip install -e ".[test]"
 
 ## Agent 与插件策略
 
-后续分发不应强制所有用户安装重型依赖。本项目按能力分层降级：
+本项目区分开发预检档与完整发布档。对外展示、分发或声称“可交付格式门禁”时，必须使用完整发布档并安装视觉校验工具。
 
-| 层级 | 用户必须安装 | 说明 |
+| 档位 | 用户必须安装 | 说明 |
 |---|---|---|
-| 核心 CLI 审计 | Python 3.9+ | 无额外运行时包依赖。 |
-| 渲染校验 | LibreOffice + Poppler | 仅当用户需要 DOCX -> PDF -> PNG 时必需。 |
+| `core` 开发预检 | Python 3.9+ | 仅用于文本和 DOCX 结构检查；不是完整发布版。 |
+| `release` 完整发布 | Python 3.9+、LibreOffice、Poppler | 必须可以执行 DOCX -> PDF -> PNG，并纳入格式门禁。 |
 | Agent Skill 使用 | Codex、Claude Code 或兼容 Skill Runner | 可选；脚本可脱离 Agent 直接运行。 |
-| 未来像素级 diff | 可选视觉 diff 工具 | v0.1 暂未内置。 |
+| 增强视觉 diff | `diff-pdf`、`diff-pdf-visually` 或同类工具 | 可选增强；不替代默认 LibreOffice + Poppler 渲染链路。 |
 
-打包分发时，建议默认安装或说明 `core` 能力；只有用户需要渲染校验时，才要求安装 LibreOffice 和 Poppler。
+发布包、插件包或 Agent Skill 分发说明应默认要求 `release` 档位。缺少 LibreOffice 或 Poppler 时，只能标记为“预检能力可用”，不能标记为“发布版完整可用”。
+
+## 发布版强制校验
+
+完整发布前先运行依赖门禁：
+
+```bash
+./skills/legal-document-format/scripts/check_release_requirements.py --mode release
+```
+
+发布版格式任务至少应执行：
+
+```bash
+./skills/legal-document-format/scripts/render_docx.sh out/synthetic.docx out/rendered
+
+./skills/legal-document-format/scripts/format_gate.py \
+  --docx out/synthetic.docx \
+  --baseline-png out/rendered/png \
+  --candidate-png out/rendered/png \
+  --require-visual \
+  --json
+```
+
+`--require-visual` 会强制要求 PNG 渲染页输入。缺少视觉校验输入时，门禁直接报错。
 
 ## 分发档位
 
 | 档位 | 组件 | 适合用户 |
 |---|---|---|
 | `core` | Python 3.9+、`audit_text.py`、`audit_docx_structure.py`、`format_gate.py` | 只需要文本和 DOCX 结构门禁的用户。 |
-| `render` | `core` + LibreOffice + Poppler + `render_docx.sh` + `compare_rendered_pages.py` | 需要视觉 smoke check 和页面级产物的用户。 |
-| `agent-skill` | `core` 或 `render` + `skills/legal-document-format/SKILL.md` | Codex、Claude Code 或兼容 Skill Runner。 |
+| `release` | `core` + LibreOffice + Poppler + `render_docx.sh` + `compare_rendered_pages.py` + `--require-visual` | 对外发布、插件分发和正式演示的默认档位。 |
+| `agent-skill` | `release` + `skills/legal-document-format/SKILL.md` | Codex、Claude Code 或兼容 Skill Runner。 |
 | `dev` | 以上任一档位 + `pytest` | 贡献者和维护者。 |
 
 ## 快速开始
@@ -172,6 +198,7 @@ mkdir -p out
   --docx out/synthetic.docx \
   --baseline-png out/rendered/png \
   --candidate-png out/rendered/png \
+  --require-visual \
   --json --no-excerpt
 ```
 
@@ -185,6 +212,7 @@ mkdir -p out
 | `audit_docx_structure.py` | 读取 DOCX ZIP/OpenXML，报告 section、段落、表格、页眉页脚、样式、编号和损坏的关键 part。 |
 | `render_docx.sh` | 使用 LibreOffice headless 和 Poppler 执行 DOCX -> PDF -> PNG。 |
 | `compare_rendered_pages.py` | 比较 PNG 渲染页目录的页数、文件名、PNG 有效性、尺寸和文件大小差异。 |
+| `check_release_requirements.py` | 检查发布版所需的 Python、LibreOffice 和 Poppler 是否可用。 |
 | `format_gate.py` | 将文本、DOCX 和渲染页检查聚合为一个 JSON 或人类可读报告。 |
 | `make_synthetic_docx.py` | 创建 synthetic DOCX，用于演示和 smoke test。 |
 
@@ -193,6 +221,8 @@ mkdir -p out
 ```text
 legal-document-format-skill/
 ├── assets/
+│   ├── logo.png
+│   ├── logo-generated.png
 │   └── logo.svg
 ├── README.md
 ├── LICENSE
@@ -202,6 +232,7 @@ legal-document-format-skill/
 │   └── legal-document-format/
 │       ├── SKILL.md
 │       ├── references/
+│       │   ├── project-basis.md
 │       │   ├── routing.md
 │       │   ├── content-lock.md
 │       │   ├── exact-template.md
@@ -212,6 +243,7 @@ legal-document-format-skill/
 │       │   ├── README.md
 │       │   ├── audit_docx_structure.py
 │       │   ├── audit_text.py
+│       │   ├── check_release_requirements.py
 │       │   ├── compare_rendered_pages.py
 │       │   ├── format_gate.py
 │       │   ├── make_synthetic_docx.py
@@ -247,8 +279,26 @@ python -m pytest
 当前本地验证结果：
 
 ```text
-39 passed
+44 passed
 ```
+
+## 项目经验与外部参考
+
+本仓库不是从空白 prompt 临时拼出的展示页，已经抽取了内部文书格式经验，并保留了公开可审阅的取舍说明：
+
+- [项目依据与取舍](skills/legal-document-format/references/project-basis.md)：来自本仓库方案报告的安全抽象版，说明哪些内部经验被公开化，哪些私有模板和真实案件信息不进入仓库。
+- [视觉校验](skills/legal-document-format/references/visual-validation.md)：明确 LibreOffice + Poppler 是默认渲染链路。
+- [失败模式](skills/legal-document-format/references/failure-modes.md)：把内容锁定、模板继承、OpenXML、标点和视觉失败分成可审查门禁。
+
+外部参考采用“借鉴机制，不盲目引依赖”的原则：
+
+| 项目 | 借鉴点 | 本项目取舍 |
+|---|---|---|
+| [GitHub README 官方说明](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes) | README 应说明项目做什么、为什么有用、如何开始、如何获得帮助。 | 首页保留标题、Logo、Badges、快速开始、依赖、脚本、隐私和路线图。 |
+| [python-docx](https://github.com/python-openxml/python-docx) | DOCX 读写生态的事实标准之一。 | 暂不作为核心依赖；当前以标准库检查 OpenXML，降低安装面。 |
+| [diff-pdf](https://github.com/vslavik/diff-pdf) | PDF 视觉比较和差异高亮。 | 作为增强视觉 diff 参考；默认链路仍是 LibreOffice + Poppler + PNG 元数据门禁。 |
+| [diff-pdf-visually](https://github.com/bgeron/diff-pdf-visually) | PDF 转 PNG 后做页面视觉一致性判断。 | 借鉴“页数、尺寸、渲染图比较”的思路。 |
+| [pdf-visual-diff](https://github.com/moshensky/pdf-visual-diff) | snapshot 式 PDF 视觉回归。 | 借鉴 snapshot 机制；不引入 Node/Jest 作为默认依赖。 |
 
 ## 格式门禁口径
 
