@@ -1,27 +1,26 @@
-# Agent Instructions
+# Agent 指令
 
-This repository is an open, synthetic-first Agent Skill for legal document formatting. It exists to demonstrate a reusable workflow for DOCX template preservation, content locking, format checks, and visual validation.
+本仓库是一个 synthetic-first 的法律文书格式 Agent Skill。它用于展示一套可复用的 DOCX 模板继承、内容锁定、格式检查和视觉校验工作流。
 
-## Core Rules
+## 核心规则
 
-- Do not commit real cases, private templates, client facts, institution-specific rules, or confidential examples.
-- Treat formatting as a delivery-control task, not a chance to rewrite legal substance.
-- During format work, do not silently change parties, dates, amounts, claims, law citations, reasoning, dispositive text, or signatures.
-- If exact template formatting is requested, start from the supplied template or base document. Do not recreate the document from a blank DOCX unless the user expressly chooses ordinary formatting.
-- Keep `SKILL.md` short. Put detailed rules in `references/` and load them only when the route requires them.
-- Keep scripts deterministic, local-first, and free of hardcoded secrets.
+- 不要提交真实案件、私有模板、客户事实、机构特定规则或保密示例。
+- 将格式处理视为交付控制任务，不要借格式处理改写法律实体内容。
+- 格式阶段不得静默改动当事人、日期、金额、请求、法条、理由、主文、签名或附件清单。
+- 如果用户要求精确模板套版，应从用户提供的模板或母版文档出发。除非用户明确选择普通排版，否则不要从空白 DOCX 重新仿制。
+- `SKILL.md` 保持简洁；详细规则放入 `references/`，并按路由需要加载。
+- 脚本应保持确定性、本地优先，不要硬编码密钥。
 
-## Verification
+## 验证要求
 
-Before calling a change ready:
+在认为变更可交付前：
 
-- run shell syntax checks for shell scripts;
-- run available script help or smoke checks;
-- verify README instructions match the files that exist;
-- confirm no private sample material was added;
-- if a DOCX is rendered, check that LibreOffice creates a PDF and Poppler creates PNG pages.
+- 对 shell 脚本运行语法检查；
+- 运行可用脚本的 `--help` 或 smoke check；
+- 确认 README 指令与实际文件一致；
+- 确认没有新增私有样本材料；
+- 如果渲染 DOCX，应确认 LibreOffice 生成 PDF，Poppler 生成 PNG 页面。
 
-## Legal Boundary
+## 法律边界
 
-This repository supports document formatting and quality control. It does not provide legal advice and does not replace lawyer review.
-
+本仓库支持文书格式处理和质量控制，不提供法律意见，也不替代律师审阅。

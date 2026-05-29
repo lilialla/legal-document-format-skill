@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="文格 Logo" width="132">
+  <img src="assets/logo.png" alt="文格 Logo" width="156">
 </p>
 
 <h1 align="center">文格：法律文书格式门禁 Skill</h1>
@@ -279,9 +279,10 @@ python -m pytest
 ```text
 assets/logo.svg
 assets/logo-generated.png
+assets/logo.png
 ```
 
-`logo.svg` 是 README 使用的可维护矢量版；`logo-generated.png` 是生成式图像版本，适用于发布说明、包页面和 Skill 目录卡片。Logo 采用“文书 + 门禁 + 盾牌 + 对勾”的组合。
+`logo.png` 是 README 使用的现代杂志风主 Logo；`logo-generated.png` 保留同版生成图；`logo.svg` 是可维护矢量备用版。Logo 采用低饱和淡色、留白和文书格线语言，避免重型企业图标风。
 
 ## 路线图
 

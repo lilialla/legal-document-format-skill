@@ -1,65 +1,65 @@
-# Format Checklist
+# 格式检查清单
 
-Use this checklist before delivering a formatted legal document. The requested style guide or supplied template controls when it conflicts with this generic checklist.
+交付格式化法律文书前使用本清单。若用户指定样式指南或提供模板，应以用户要求或模板为准。
 
-## Typography
+## 字体
 
-- Body font checked.
-- East Asian font checked.
-- Western font checked.
-- Font size checked.
-- Bold, italic, underline, and emphasis checked.
-- Font color checked; no accidental redlines or copied colors remain unless intended.
+- 正文字体已检查；
+- 中文字体已检查；
+- 西文字体已检查；
+- 字号已检查；
+- 加粗、斜体、下划线和强调样式已检查；
+- 字体颜色已检查，非预期红色、复制残留颜色或修订色已清理。
 
-## Paragraphs
+## 段落
 
-- Line spacing checked.
-- Paragraph spacing before and after checked.
-- First-line indentation checked.
-- Hanging indentation checked for lists and citations.
-- Alignment checked.
-- Blank lines removed or normalized.
+- 行距已检查；
+- 段前段后间距已检查；
+- 首行缩进已检查；
+- 列表和引用的悬挂缩进已检查；
+- 对齐方式已检查；
+- 空行已删除或规范化。
 
-## Page Layout
+## 页面
 
-- Page size checked.
-- Margins checked.
-- Section breaks checked.
-- Page breaks checked.
-- Headers and footers checked.
-- Page numbers checked.
-- Tables do not overflow page width.
-- Signature and seal areas do not split improperly.
+- 页面尺寸已检查；
+- 页边距已检查；
+- 分节符已检查；
+- 分页符已检查；
+- 页眉页脚已检查；
+- 页码已检查；
+- 表格未溢出页面宽度；
+- 签名区和盖章区未被不当拆分。
 
-## Numbering And Headings
+## 编号与标题
 
-- Heading hierarchy checked.
-- Numbering continuity checked.
-- Cross-references checked where present.
-- Tables, annexes, and evidence labels checked.
+- 标题层级已检查；
+- 编号连续性已检查；
+- 如有交叉引用，已检查；
+- 表格、附件和证据编号已检查。
 
-## Chinese Legal Punctuation
+## 中文法律标点
 
-- Chinese quotation marks checked.
-- Colons checked.
-- Semicolons and enumeration punctuation checked.
-- Full-width and half-width punctuation checked.
-- Mixed Chinese-English spacing checked.
-- Invisible copied characters checked when possible.
+- 中文引号已检查；
+- 冒号已检查；
+- 分号和列举标点已检查；
+- 全角/半角标点已检查；
+- 中英文混排空格已检查；
+- 如可行，已检查不可见复制字符。
 
-## Final Report
+## 最终报告
 
-A final report should include:
+最终报告建议包含：
 
-| Item | Status | Notes |
+| 项目 | 状态 | 备注 |
 |---|---|---|
-| Content lock | preserved / needs confirmation / not checked | |
-| Template inheritance | used / not required / not checked | |
-| Typography | passed / issues / not checked | |
-| Paragraphs | passed / issues / not checked | |
-| Page layout | passed / issues / not checked | |
-| Headers and footers | passed / issues / not checked | |
-| Page numbers | passed / issues / not checked | |
-| Punctuation | passed / issues / not checked | |
-| Render validation | passed / issues / not available | |
+| 内容锁定 | preserved / needs confirmation / not checked | |
+| 模板继承 | used / not required / not checked | |
+| 字体 | passed / issues / not checked | |
+| 段落 | passed / issues / not checked | |
+| 页面 | passed / issues / not checked | |
+| 页眉页脚 | passed / issues / not checked | |
+| 页码 | passed / issues / not checked | |
+| 标点 | passed / issues / not checked | |
+| 渲染校验 | passed / issues / not available | |
 

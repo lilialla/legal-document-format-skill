@@ -1,49 +1,49 @@
-# Content Lock
+# 内容锁定
 
-Formatting work must preserve legal substance. The default rule is: if a change could affect rights, obligations, procedural facts, legal reasoning, or enforceability, it is not a formatting change.
+格式处理必须保留法律实体内容。默认规则是：如果某项改动可能影响权利义务、程序事实、法律理由或可执行性，它就不是单纯格式改动。
 
-## Locked Content
+## 锁定内容
 
-Do not silently change:
+不得静默改动：
 
-- party names, aliases, representatives, addresses, or identification numbers;
-- case numbers, contract numbers, invoice numbers, evidence numbers, and document numbers;
-- dates, deadlines, periods, interest start dates, and service dates;
-- amounts, currencies, rates, percentages, quantities, and calculation formulas;
-- claims, defenses, counterclaims, admissions, and disputed issues;
-- cited statutes, articles, cases, regulations, and source names;
-- findings of fact, legal reasoning, holdings, and dispositive text;
-- arbitration fees, court fees, costs, allocation ratios, and payment deadlines;
-- signature blocks, signatory names, tribunal member names, seals, and annex lists.
+- 当事人名称、别名、代理人、地址或识别号码；
+- 案号、合同编号、发票编号、证据编号和文书编号；
+- 日期、期限、期间、利息起算日和送达日；
+- 金额、币种、利率、比例、数量和计算公式；
+- 请求、抗辩、反请求、自认和争议焦点；
+- 引用的法律、条文、案例、规范性文件和来源名称；
+- 事实认定、法律理由、裁判结论和主文；
+- 仲裁费、诉讼费、费用分担比例和付款期限；
+- 签名区、签署人、仲裁员/法官姓名、印章和附件清单。
 
-## Allowed Formatting Changes
+## 允许的格式改动
 
-Allowed when they do not alter substance:
+在不改变实体内容的前提下，可以调整：
 
-- font family and font size;
-- line spacing and paragraph spacing;
-- first-line indentation and hanging indentation;
-- heading levels and numbering style when numbering meaning is preserved;
-- margins, page breaks, section breaks, headers, footers, and page numbers;
-- full-width or half-width punctuation normalization when meaning remains unchanged;
-- removal of duplicate spaces, accidental empty lines, and copied web artifacts.
+- 字体和字号；
+- 行距和段前段后间距；
+- 首行缩进和悬挂缩进；
+- 标题层级和编号样式，但不得改变编号含义；
+- 页边距、分页符、分节符、页眉页脚和页码；
+- 不改变含义的全角/半角标点规范化；
+- 删除重复空格、误输入空行和网页复制残留。
 
-## Escalation
+## 需要确认的情形
 
-Ask for confirmation before:
+以下情况应先向用户确认：
 
-- correcting a suspected typo in a name, amount, date, citation, or dispositive item;
-- adding missing words;
-- reordering claims or award items;
-- changing punctuation where legal meaning could change;
-- resolving conflicting versions of the same text.
+- 修正疑似姓名、金额、日期、引用或主文错误；
+- 补充缺失文字；
+- 调整请求或主文顺序；
+- 改动可能影响法律含义的标点；
+- 处理同一文本的冲突版本。
 
-## Report Language
+## 报告标签
 
-Use precise status labels:
+使用精确状态标签：
 
-- `preserved`: checked and unchanged;
-- `format-only`: changed only layout or typography;
-- `needs confirmation`: possible legal-substance issue;
-- `not checked`: outside the current task or unavailable source.
+- `preserved`：已检查且未改变；
+- `format-only`：仅改变版式或视觉格式；
+- `needs confirmation`：可能涉及法律实体内容，需要确认；
+- `not checked`：本次任务未覆盖或缺少来源。
 

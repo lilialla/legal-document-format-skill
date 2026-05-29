@@ -1,48 +1,48 @@
-# Exact Template Formatting
+# 精确模板套版
 
-Exact template formatting means the output inherits the supplied base DOCX structure. It is not visual imitation.
+精确模板套版意味着输出文档继承用户提供的 DOCX 母版结构。它不是视觉仿制。
 
-## Base-Replace Principle
+## Base-Replace 原则
 
-When the user supplies a template or base document:
+当用户提供模板或母版文档时：
 
-1. Open the base DOCX as the starting file.
-2. Replace only the document content that must change.
-3. Preserve template-owned structure and metadata unless the user explicitly authorizes a change.
-4. Run structural and visual checks before delivery.
+1. 以母版 DOCX 作为起始文件。
+2. 只替换必须改变的正文内容。
+3. 除非用户明确授权，否则保留模板自身的结构和元数据。
+4. 交付前运行结构检查和视觉检查。
 
-## Preserve
+## 默认保留
 
-Preserve by default:
+默认保留：
 
-- sections and section properties;
-- page size and margins;
-- headers, footers, page fields, and page numbering;
-- styles and latent styles;
-- numbering definitions;
-- table properties;
-- paragraph properties for signature and seal areas;
-- footnotes and endnotes where present;
-- document settings, compatibility settings, and theme data unless they are known to be harmful.
+- 分节和分节属性；
+- 页面尺寸和页边距；
+- 页眉、页脚、页码字段和页码设置；
+- 样式和潜在样式；
+- 编号定义；
+- 表格属性；
+- 签名区和盖章区的段落属性；
+- 脚注和尾注；
+- 文档设置、兼容性设置和主题数据，除非明确有害。
 
-## High-Risk Failure Modes
+## 高风险失败模式
 
-- Blank-DOCX recreation that looks similar but lacks the original structure.
-- Missing or flattened headers and footers.
-- Lost section breaks causing pagination drift.
-- Numbering converted to plain text.
-- Signature block moved to a different page.
-- Font fallback or mixed East Asian / Western font settings.
-- Fields converted to stale literal text.
-- Unintended content edits during format cleanup.
+- 从空白 DOCX 重建，看起来相似但缺少原始结构；
+- 页眉页脚缺失或被扁平化；
+- 分节符丢失导致分页漂移；
+- 自动编号被转为普通文本；
+- 签名区移动到错误页面；
+- 中英文字体回退或字体设置混乱；
+- 字段被转成过期的静态文字；
+- 格式清理时意外改动实体内容。
 
-## Minimum Acceptance Criteria
+## 最低验收标准
 
-For exact-template work, the format report must state:
+精确套版报告必须说明：
 
-- source template or base document path;
-- whether output was generated from the base document;
-- whether headers, footers, sections, page numbers, styles, and numbering were preserved;
-- whether visual render succeeded;
-- known deviations from the base.
+- 源模板或母版路径；
+- 输出是否基于母版生成；
+- 页眉、页脚、分节、页码、样式和编号是否保留；
+- 视觉渲染是否成功；
+- 与母版相比的已知偏差。
 

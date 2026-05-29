@@ -1,60 +1,60 @@
-# Failure Modes
+# 失败模式
 
-Use this reference when a formatting task needs a delivery gate or a human-readable review report. These are formatting and technical failure modes, not legal-merits conclusions.
+当格式任务需要交付门禁或人类可读审查报告时，使用本参考。这里描述的是格式和技术失败模式，不是法律实体判断。
 
-## Content Lock Failures
+## 内容锁定失败
 
-- Party names, dates, amounts, claims, citations, dispositive text, signatures, or annex lists changed during formatting.
-- Text cleanup rewrote legal meaning instead of only correcting format.
-- Suspected typos were corrected without confirmation.
+- 格式阶段改变了当事人、日期、金额、请求、引用、主文、签名或附件清单；
+- 文本清理改写了法律含义，而不是只修正格式；
+- 未经确认修正疑似错别字或实体错误。
 
-Status: blocking until reviewed.
+状态：阻断，直到复核或明确放行。
 
-## Template Inheritance Failures
+## 模板继承失败
 
-- Exact-template work started from a blank DOCX instead of the supplied base.
-- Headers, footers, page fields, section breaks, styles, or numbering definitions were dropped.
-- Signature or seal blocks moved after pagination changed.
-- Template-specific page setup was replaced by generic defaults.
+- 精确套版从空白 DOCX 开始，而不是从用户提供的母版开始；
+- 页眉、页脚、页码字段、分节符、样式或编号定义丢失；
+- 分页变化导致签名区或盖章区移位；
+- 模板特定页面设置被通用默认值替换。
 
-Status: blocking for exact-template tasks.
+状态：对精确模板任务构成阻断。
 
-## OpenXML Structure Failures
+## OpenXML 结构失败
 
-- DOCX is not a readable ZIP package.
-- `[Content_Types].xml`, `_rels/.rels`, `word/document.xml`, or document relationships are missing or malformed.
-- `word/document.xml` has no paragraphs or tables.
-- Header/footer parts are absent when the template is expected to contain them.
+- DOCX 不是可读取的 ZIP 包；
+- `[Content_Types].xml`、`_rels/.rels`、`word/document.xml` 或 document relationships 缺失或 XML 损坏；
+- `word/document.xml` 没有段落或表格；
+- 模板预期存在页眉页脚，但相关 part 缺失。
 
-Status: missing or malformed required parts are blocking; absent optional parts are warnings unless the template requires them.
+状态：关键 part 缺失或损坏为阻断；可选 part 缺失通常为 warning，除非模板明确要求。
 
-## Text And Punctuation Failures
+## 文本与标点失败
 
-- Half-width punctuation appears in Chinese legal context.
-- English straight quotes appear where Chinese quotation marks are expected.
-- Empty brackets or empty book-title marks indicate possible placeholders.
-- Consecutive spaces or trailing whitespace suggest copied or unstable formatting.
+- 中文法律语境中出现半角标点；
+- 使用英文直引号而非规范中文引号；
+- 空括号或空书名号显示可能存在占位符；
+- 连续空格或行尾空格显示复制/排版不稳定。
 
-Status: warnings by default; blocking only when the user chooses strict text audit.
+状态：默认 warning；只有用户选择严格文本门禁时才阻断。
 
-## Render And Visual Failures
+## 渲染与视觉失败
 
-- DOCX cannot render to PDF.
-- PDF cannot render to PNG pages.
-- Rendered page directory is empty.
-- Baseline and candidate page counts differ.
-- PNG pages are invalid, truncated, or dimensionally different.
-- Warning-only file size differences may indicate visual drift and should be inspected.
+- DOCX 无法渲染为 PDF；
+- PDF 无法渲染为 PNG 页面；
+- 渲染页目录为空；
+- 基准页和候选页数量不同；
+- PNG 页面无效、截断或尺寸不同；
+- 仅文件大小不同通常提示视觉漂移风险，需要人工查看。
 
-Status: render failures, empty outputs, invalid PNGs, page-count mismatches, and dimension mismatches are blocking. Size-only differences are warnings.
+状态：渲染失败、空输出、无效 PNG、页数不一致和尺寸不一致为阻断；仅大小差异为 warning。
 
-## Report Discipline
+## 报告纪律
 
-Every report should separate:
+报告应区分：
 
-- `error`: blocks delivery until fixed or explicitly waived.
-- `warning`: requires review but does not automatically block.
-- `info`: context for the reviewer.
+- `error`：阻断交付，除非修复或明确豁免；
+- `warning`：需要复核，但不自动阻断；
+- `info`：供审查者理解上下文。
 
-Do not claim legal correctness from formatting checks. A clean format gate means the checked formatting surfaces passed, not that the legal document is substantively correct.
+不要把格式检查通过表述为法律实体正确。格式门禁通过只说明被检查的格式面通过，不代表文书法律内容正确。
 

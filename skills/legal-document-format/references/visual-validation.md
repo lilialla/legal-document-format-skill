@@ -1,61 +1,60 @@
-# Visual Validation
+# 视觉校验
 
-Visual validation checks whether a DOCX can be rendered and reviewed as pages. It does not prove legal correctness.
+视觉校验用于检查 DOCX 是否可以渲染为可审阅页面。它不证明法律实体内容正确。
 
-## Default Render Chain
+## 默认渲染链路
 
 ```text
-DOCX -> LibreOffice headless -> PDF -> Poppler pdftoppm -> PNG pages
+DOCX -> LibreOffice headless -> PDF -> Poppler pdftoppm -> PNG 页面
 ```
 
-Use `scripts/render_docx.sh` for the default local path.
+默认使用 `scripts/render_docx.sh`。
 
-Use `scripts/compare_rendered_pages.py` when both baseline PNG pages and candidate PNG pages are available. The built-in comparison is a lightweight gate for page count, file names, file size, PNG validity, and dimensions. It is not a pixel diff.
+当同时存在基准 PNG 页面和候选 PNG 页面时，使用 `scripts/compare_rendered_pages.py`。内置比较是轻量门禁，检查页数、文件名、文件大小、PNG 有效性和尺寸；它不是像素级 diff。
 
-## Required Tools
+## 必需工具
 
-- `soffice` from LibreOffice.
-- `pdftoppm` from Poppler.
+- LibreOffice 的 `soffice`；
+- Poppler 的 `pdftoppm`。
 
-On macOS, LibreOffice may be available at:
+macOS 上 LibreOffice 可能位于：
 
 ```text
 /Applications/LibreOffice.app/Contents/MacOS/soffice
 ```
 
-## What To Inspect
+## 渲染后检查重点
 
-After rendering, inspect:
+- 首页标题和页边距；
+- 页眉页脚；
+- 页码；
+- 分节转换；
+- 表格和长段落；
+- 编号和缩进；
+- 签名区和盖章区；
+- 末页是否溢出；
+- 是否存在多余空白页。
 
-- first page title and margins;
-- headers and footers;
-- page numbers;
-- section transitions;
-- tables and long paragraphs;
-- numbering and indentation;
-- signature and seal blocks;
-- final page overflow;
-- blank trailing pages.
+## 基准比较
 
-## Baseline Comparison
+如果提供了基准 PDF 或 PNG 快照，应比较：
 
-If a baseline PDF or PNG snapshot is supplied, compare:
+- 页数；
+- 页面尺寸；
+- 可见文字位置；
+- 页眉页脚和页码；
+- 签名区位置；
+- 异常空白区域或溢出。
 
-- page count;
-- page dimensions;
-- visible text position;
-- headers, footers, and page numbers;
-- signature block location;
-- unexpected blank regions or overflow.
+可选增强工具包括 `diff-pdf`、Python PDF 视觉比较工具或 PNG snapshot 比较。
 
-Optional tools include `diff-pdf`, Python-based PDF visual comparison, or snapshot-style PNG comparison.
+## 报告状态
 
-## Report Status
+建议使用：
 
-Use:
+- `rendered`：已生成 PDF 和 PNG 页面；
+- `render failed`：转换失败；
+- `baseline matched`：在选定容差下视觉比较通过；
+- `baseline differed`：视觉比较发现差异；
+- `no baseline`：渲染成功，但无法进行视觉 diff。
 
-- `rendered`: PDF and PNG pages were created;
-- `render failed`: conversion failed;
-- `baseline matched`: visual comparison passed under the chosen tolerance;
-- `baseline differed`: visual comparison found differences;
-- `no baseline`: render succeeded but no visual diff was possible.

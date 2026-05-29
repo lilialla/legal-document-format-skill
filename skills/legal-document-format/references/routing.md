@@ -1,84 +1,84 @@
-# Routing
+# 路由
 
-Use the narrowest route that fits the request. Escalate only when the user asks for stronger fidelity or the document type demands it.
+选择能满足请求的最窄路径。只有当用户要求更高保真度，或文书类型本身需要时，才升级路由。
 
-## L0 Text Cleanup
+## L0 文本清理
 
-Use for pasted text, law provisions, case excerpts, headings, and punctuation cleanup.
+适用于粘贴文本、法条、案例摘录、标题和标点清理。
 
-Do:
+应当：
 
-- preserve legal substance;
-- normalize obvious spacing and punctuation defects;
-- keep source order unless the user requests restructuring.
+- 保留法律实体内容；
+- 规范明显空格和标点问题；
+- 除非用户要求重组，否则保留原有顺序。
 
-Do not:
+不得：
 
-- infer missing legal content;
-- rewrite holdings, claims, amounts, or dates;
-- convert to DOCX unless requested.
+- 推断缺失的法律内容；
+- 改写裁判结论、请求、金额或日期；
+- 未经请求转换为 DOCX。
 
-## L1 Ordinary DOCX Formatting
+## L1 普通 DOCX 排版
 
-Use for ordinary legal memos, drafts, reports, or Markdown-to-Word work where exact template fidelity is not required.
+适用于普通法律备忘录、草稿、报告或 Markdown-to-Word 任务，且不要求精确模板一致。
 
-Do:
+应当：
 
-- apply the requested font, font size, line spacing, paragraph indentation, margins, and heading hierarchy;
-- produce a readable format report;
-- run render validation when delivery quality matters.
+- 应用用户要求的字体、字号、行距、缩进、页边距和标题层级；
+- 生成可读的格式报告；
+- 交付质量重要时运行渲染校验。
 
-Do not:
+不得：
 
-- represent the result as exact template formatting;
-- imitate a template from visual memory.
+- 把结果表述为精确模板套版；
+- 凭视觉记忆仿制模板。
 
-## L2 Exact Template Formatting
+## L2 精确模板套版
 
-Use when the user provides a DOCX template, base award, institutional format, or asks to keep the same style, header, footer, page setup, sections, or pagination logic.
+适用于用户提供 DOCX 模板、母版裁决书、机构格式，或要求保留同款样式、页眉页脚、页面设置、分节或分页逻辑。
 
-Do:
+应当：
 
-- start from the supplied base DOCX;
-- replace content inside the base structure;
-- preserve styles, headers, footers, sections, numbering, page setup, and signature blocks unless explicitly changed.
+- 从用户提供的母版 DOCX 开始；
+- 在母版结构内替换内容；
+- 除非明确要求，保留样式、页眉页脚、分节、编号、页面设置和签名区。
 
-Do not:
+不得：
 
-- create a blank DOCX and manually approximate the template;
-- drop section breaks or page fields;
-- flatten headers, footers, or numbering.
+- 创建空白 DOCX 并手工近似模板；
+- 丢失分节符或页码字段；
+- 扁平化页眉页脚或编号。
 
-## L3 Arbitration Award Formatting
+## L3 裁决书风格定稿
 
-Use for arbitration awards, award-like dispositive documents, and final-format formal instruments.
+适用于仲裁裁决书、裁决式正式文书和最终定稿类文书。
 
-Do:
+应当：
 
-- treat content as locked unless the user explicitly authorizes legal edits;
-- preserve dispositive text and signature areas;
-- check title, parties, procedural history, facts, tribunal reasoning, award items, costs, dates, seals, and annexes as formatting surfaces only;
-- run visual validation when tools are available.
+- 除非用户明确授权法律修改，否则视为内容已锁定；
+- 保留主文和签名区域；
+- 将标题、当事人、程序经过、事实、裁判理由、裁决项、费用、日期、印章和附件作为格式面检查；
+- 工具可用时运行视觉校验。
 
-Do not:
+不得：
 
-- alter the award result while formatting;
-- add unsupported facts or legal reasoning;
-- claim readiness without lawyer review.
+- 格式阶段改变裁决结果；
+- 添加没有依据的事实或法律理由；
+- 未经律师审阅即宣称可正式提交。
 
-## L4 Visual Validation
+## L4 视觉校验
 
-Use when the user asks to render, inspect, compare, or validate layout.
+适用于用户要求渲染、检查、比较或校验版面。
 
-Do:
+应当：
 
-- render DOCX to PDF with LibreOffice;
-- render PDF to PNG with Poppler;
-- compare against a baseline only when a baseline exists;
-- report visual risks such as pagination shifts, missing headers, missing footers, broken numbering, overflow, and signature block displacement.
+- 使用 LibreOffice 将 DOCX 渲染为 PDF；
+- 使用 Poppler 将 PDF 渲染为 PNG；
+- 只有存在基准时才进行基准比较；
+- 报告分页漂移、页眉页脚缺失、页码异常、编号断裂、溢出和签名区移位等风险。
 
-Do not:
+不得：
 
-- treat a successful render as proof of legal correctness;
-- claim pixel-level identity without a visual diff.
+- 将渲染成功等同于法律内容正确；
+- 没有视觉 diff 时宣称像素级一致。
 
